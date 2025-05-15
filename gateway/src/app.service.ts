@@ -1,8 +1,15 @@
 import { Injectable } from '@nestjs/common';
 
+/**
+ * JWT 유효성 검사 메서드
+ * 역할 검사 메서드
+ */
 @Injectable()
 export class AppService {
-  getHello(): string {
-    return 'Hello World!';
+
+  isValidJWT(token: string): boolean {
+    // if()
+    return false;
+    // return 'Hello World!';
   }
 }
