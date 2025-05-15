@@ -26,4 +26,8 @@ mongosh --port 27017
 docker build . -t <server-name>
 docker container run -d -p 3000:3000 nest-docker
 ```
+## 디렉토리 구조
+* 서버 실행은 MSA 구조지만, 환경설정, prettier 등은 공통으로 적용할 것들이라 모노 레포 구조로 간다.
+```aiignore
 
+```
