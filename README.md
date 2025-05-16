@@ -26,8 +26,15 @@ mongosh --port 27017
 docker build . -t <server-name>
 docker container run -d -p 3000:3000 nest-docker
 ```
+- mongosh : js문법으로 초기 데이터 삽입 스크립트 작성
+
 ## 디렉토리 구조
 * 서버 실행은 MSA 구조지만, 환경설정, prettier 등은 공통으로 적용할 것들이라 모노 레포 구조로 간다.
 ```aiignore
 
 ```
+
+## 설계
+
+JWT 설계
+payload: id, role, expire_dt (expire_dt는 서버 요청 횟수 효율화용도. 변조돼도 영향x.)
