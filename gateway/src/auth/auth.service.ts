@@ -5,10 +5,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcrypt';
 import { Model } from 'mongoose';
 import { ErrorCode, ResponseDTO, sendFail, sendSuccess } from '../util/common.util';
-import { Token, TokenDocument } from '../db/token.schema';
 import { User, UserDocument } from '../db/user.schema';
 import {
-  convertToUserVO,
   LoginDTO,
   Payload,
   Role,
@@ -27,7 +25,6 @@ export class AuthService {
   constructor(
     private jwtService: JwtService,
     @InjectModel(User.name) private userDao: Model<UserDocument>,
-    @InjectModel(Token.name) private tokenDao: Model<TokenDocument>
   ) {}
 
   async insertUser(user: UserVO): Promise<ResponseDTO> {
@@ -36,25 +33,25 @@ export class AuthService {
     }
 
     if (
-      !(4 <= user.id?.length && user.id?.length <= 10) || // id : 4~10자
+      !(4 <= user._id?.length && user._id?.length <= 10) || // id : 4~10자
       !(4 <= user.pw?.length && user.pw?.length <= 10) || // pw : 4~10자
       !Object.values(Role).includes(user.role)
     ) {
       return sendFail(ErrorCode.PARAM002);
     }
 
-    const findUser = await this.userDao.findOne({ _id: user.id });
+    const findUser = await this.userDao.findOne({ _id: user._id });
     if (findUser) {
       return sendFail(ErrorCode.AUTH002);
     }
 
     const resultUser = await this.userDao.create({
-      _id: user.id,
+      _id: user._id,
       pw: await this.bycryptPassword(user.pw),
       role: user.role
     });
-    const uuser = convertToUserVO(resultUser);
-    return sendSuccess(uuser);
+    // const uuser = convertToUserVO(resultUser);
+    return sendSuccess(resultUser);
   }
 
   private saltRounds = 10; // 해시 반복 횟수 (10~12 추천)
@@ -69,12 +66,39 @@ export class AuthService {
     return bcrypt.compare(rawPassword, encryptedPassword);
   }
 
+  async updateUserRole(user: UserVO): Promise<ResponseDTO> {
+    if (!user) {
+      return sendFail(ErrorCode.PARAM001);
+    }
+    if (
+      !(4 <= user._id?.length && user._id?.length <= 10) || // id : 4~10자
+      !Object.values(Role).includes(user.role)
+    ) {
+      return sendFail(ErrorCode.PARAM002);
+    }
+
+    const findUser = await this.userDao.findOne({ _id: user._id });
+    if (!findUser) {
+      return sendFail(ErrorCode.AUTH001);
+    }
+
+    if (findUser.role === user.role) {
+      return sendFail(ErrorCode.PARAM003);
+    }
+
+    findUser.role = user.role;
+    findUser.upd_dt = new Date();
+    findUser.save();
+
+    return sendSuccess();
+  }
+
   /**
    * id, pw입력 시 유효성 체크 후 AT, RT를 반환.
    */
   async login(user: LoginDTO): Promise<ResponseDTO> {
     // 유효성 검사
-    const findUser = await this.userDao.findOne({ _id: user.id }).exec();
+    const findUser = await this.userDao.findOne({ _id: user._id }).exec();
     if (findUser === null) {
       return sendFail(ErrorCode.AUTH001);
     }
@@ -84,10 +108,14 @@ export class AuthService {
     }
 
     const payload = this.getPayload(findUser);
+    const dateTimeMs = Date.now();
+
+    payload.expire_dt = new Date(dateTimeMs + 1000 * this.ACCESS_DURATION);
     const access_token = this.createAccessToken(payload);
+    payload.expire_dt = new Date(dateTimeMs + 1000 * this.REFRESH_DURATION);
     const refresh_token = this.createRefreshToken(payload);
 
-    findUser.expire_dt = new Date(Date.now() + 1000 * this.ACCESS_DURATION);
+    findUser.expire_dt = new Date(dateTimeMs + 1000 * this.ACCESS_DURATION);
     findUser.refresh_token = refresh_token;
     await findUser.save();
 
@@ -118,21 +146,60 @@ export class AuthService {
     return {
       userId: user._id,
       role: user.role,
-      expire_dt: new Date()
     };
   }
 
-  async logout(user: Payload) : Promise<ResponseDTO>{
-    console.log("logout:", user)
+  async logout(user: Payload): Promise<ResponseDTO> {
+    if(!user.userId){
+      return sendFail(ErrorCode.PARAM001)
+    }
+    console.log('logout:', user);
     const findUser = await this.userDao.findOne({ _id: user.userId }).exec();
     if (findUser === null) {
       return sendFail(ErrorCode.AUTH001);
     }
-    
+
     findUser.expire_dt = new Date();
     findUser.refresh_token = null;
     findUser.save();
 
     return sendSuccess();
+  }
+
+  async refreshToken(input: { refresh_token }): Promise<ResponseDTO> {
+    const refreshToken = input.refresh_token;
+    const verfiedPayload = this.jwtService.verify(refreshToken, {
+      secret: this.REFRESH_SECRET
+    });
+    const payload: Payload = {
+      userId: verfiedPayload.userId,
+      role: verfiedPayload.role,
+      expire_dt: verfiedPayload.expire_dt,
+    };
+
+    const findUser = await this.userDao.findOne({ _id: payload.userId });
+    if (findUser === null) {
+      return sendFail(ErrorCode.AUTH001);
+    }
+    if (findUser.refresh_token !== refreshToken) {
+      return sendFail(ErrorCode.PARAM002);
+    }
+
+    // AT, RT 재발급
+    const dateTimeMs = Date.now();
+
+    payload.expire_dt = new Date(dateTimeMs + 1000 * this.ACCESS_DURATION);
+    const newAccessToken = this.createRefreshToken(payload);
+    payload.expire_dt = new Date(dateTimeMs + 1000 * this.REFRESH_DURATION);
+    const newRefreshToken = this.createRefreshToken(payload);
+
+    findUser.expire_dt = new Date(dateTimeMs + 1000 * this.ACCESS_DURATION);
+    findUser.refresh_token = newRefreshToken;
+    await findUser.save();
+
+    return sendSuccess({
+      access_token: newAccessToken,
+      refresh_token: newRefreshToken,
+    });
   }
 }

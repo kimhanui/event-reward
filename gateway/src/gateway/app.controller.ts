@@ -1,7 +1,8 @@
 import { HttpService } from '@nestjs/axios';
 import { Controller, Get, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../jwt/jwt.guard';
-import { AppService } from '../gateway/app.service';
+import { AppService } from './app.service';
+import mongoose from 'mongoose';
 
 /**
  * Proxy 역할의 컨트롤러
@@ -18,6 +19,8 @@ export class AppController {
 
   @Get('health')
   async health() {
+    console.log('mongoose.connected:', mongoose.connection.readyState); // 1이면 연결 완료
+    console.log('connected to DB:', mongoose.connection.name);
     return 'Gateway Up';
   }
 

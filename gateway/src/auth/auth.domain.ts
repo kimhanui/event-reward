@@ -1,4 +1,4 @@
-import { User } from '../db/user.schema';
+import { User, UserDocument } from '../db/user.schema';
 
 export enum Role {
   USER = 'USER',
@@ -8,30 +8,34 @@ export enum Role {
 }
 
 export interface LoginDTO {
-  id: string;
+  _id: string;
   pw: string;
 }
 
 export interface UserVO {
-  id: string;
+  _id: string;
   pw: string;
   role: Role;
   reg_dt: Date;
-  upd_dt: Date;
+  upd_dt?: Date;
+  expire_dt?: Date;
+  refresh_token?: string;
 }
 
-export function convertToUserVO(user: User): UserVO {
+export function mapToUserVO(user: any): UserVO {
   return {
-    id: user._id,
+    _id: user._id,
     pw: user.pw,
     role: user.role,
     reg_dt: user.reg_dt,
-    upd_dt: user.upd_dt
+    upd_dt: user.upd_dt,
+    expire_dt: user.expire_dt,
+    refresh_token: user.refresh_token
   };
 }
 
 export interface Payload {
-  userId: string;
+  userId: string; // 바꾸고 싶다 user_id로
   role: Role;
-  expire_dt: Date;
+  expire_dt?: Date;
 }

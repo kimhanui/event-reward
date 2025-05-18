@@ -5,10 +5,10 @@ import { tap } from 'rxjs/operators';
 export class LoggingInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const ctx = context.switchToHttp();
-    const request = ctx.getRequest<Request>();
-    const info = `[${request.method}] ${request.url}`;
-    console.log(`== Call:: ${info}`, request.body);
-
+    const request = ctx.getRequest();
+    const requestUser = request.user?.userId ?? 'anonymous'
+    const info = `[${requestUser}] [${request.method}] ${request.url}`;
+    console.log(`== Call::${info}`, request.body);
     const now = Date.now();
     return next.handle().pipe(
       tap((respData) =>

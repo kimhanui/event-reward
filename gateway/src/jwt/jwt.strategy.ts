@@ -21,7 +21,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
    * @param payload JWT를 인코딩하기 전 JSON 객체 ( {@link JwtService#sign} payload + iat, exp )
    */
   async validate(payload: Payload) {
-    const result = this.appService.isTokenValid(payload);
+    // console.log('validate::', payload);
+    const result = await this.appService.isTokenValid(payload);
 
     if (!result) {
       throw new UnauthorizedException('토큰 정보가 유효하지 않습니다.');
