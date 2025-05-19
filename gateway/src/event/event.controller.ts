@@ -101,6 +101,12 @@ export class EventController {
     return await this.eventService.insertRewardRequest(req);
   }
 
+  // 통합 테스트 용 API
+  @Post('reward/request/test')
+  async insertRewardRequestTest(@Req() req) {
+    return await this.eventService.insertRewardRequest(req);
+  }
+
   @UseGuards(JwtAuthGuard, RolesGuard)
   @RolesDecorator(Role.OPERATOR, Role.ADMIN)
   @Put('reward/request/confirm')

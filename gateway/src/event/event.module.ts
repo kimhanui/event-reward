@@ -13,9 +13,13 @@ import {
 import { User, UserSchema } from 'src/db/user.schema';
 import { EventController } from './event.controller';
 import { EventService } from './event.service';
-import { Condition, ConditionSchema, UserAttendance, UserAttendanceSchema } from 'src/db/condition.schema';
+import {
+  Condition,
+  ConditionSchema,
+} from 'src/db/condition.schema';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
+import {UserAttendance, UserAttendanceSchema} from "../db/user_attendance.schema";
 
 @Module({
   imports: [
