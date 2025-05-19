@@ -4,7 +4,7 @@
 
 ## 실행 방법
 ```
-npm run start # docker compose 명령어로 수정!
+docker-compose up --build -d
 ```
 
 ## 개발 환경
@@ -26,7 +26,8 @@ mongosh --port 27017
 docker build . -t <server-name>
 docker container run -d -p 3000:3000 nest-docker
 ```
-- mongosh : js문법으로 초기 데이터 삽입 스크립트 작성
+- `./auth`, `./event`, `./gateway` 폴더 안에 각각의 앱 소스코드와 Dockerfile이 있어 `docker-compose up --build` 로 전체를 빌드, 실행한다.
+- docker-compose up -d 대신 build하는 이유: TS->JS로 빌드한 결과물만 담아 경량화 함. 개발 중 코드 강제 반영해주기 위함.
 
 ## 디렉토리 구조
 * 서버 실행은 MSA 구조지만, 환경설정, prettier 등은 공통으로 적용할 것들이라 모노 레포 구조로 간다.

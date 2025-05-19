@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:latest
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: test
+#    volumes:
+#      - ./mongo_data:/data/db
+
+  auth:
+    build:
+      context: ./auth
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - mongodb
+    ports:
+      - "3001:3001"
+    environment:
+      MONGO_URI: mongodb://root:test@mongodb:27017/mydb?authSource=admin
+
+  event:
+    build:
+      context: ./event
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - mongodb
+    ports:
+      - "3002:3002"
+    environment:
+      MONGO_URI: mongodb://root:test@mongodb:27017/mydb?authSource=admin
+
+  gateway:
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - mongodb
+      - auth
+      - event
+    ports:
+      - "3000:3000"
+    environment:
+      MONGO_URI: mongodb://root:test@mongodb:27017/mydb?authSource=admin
+      AUTH_SERVICE_URL: http://auth:3001
+      EVENT_SERVICE_URL: http://event:3002
+
+volumes:
+  mongo_data:
+
