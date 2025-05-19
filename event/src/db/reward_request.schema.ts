@@ -28,7 +28,7 @@ export class RewardRequest {
   rewards: Reward[]; //	지급 내역 (embedded array)
 
   @Prop()
-  confirm_user_id: string; //	처리 담당자 id (수동지급용)
+  confirm_user_id: string; //	처리 담당자 id (수동지급 시 담당자의 id가, 자동지급시 'System'으로 저장)
 }
 
 // ? : 클라에서 요청id UUID로 만드는 방법은? 주기적으로 UUID가 변경되어 0,1 상태에서도 새 요청이 쌓일 수 밖에 없음 (정합성 문제)
