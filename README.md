@@ -7,6 +7,21 @@
 docker-compose up --build -d
 ```
 
+```
+# 테스트 데이터 수동 입력 (powershell 기준)
+Get-Content .\init\init-mongo.js `
+  | docker-compose exec -T mongodb mongosh --username root --password test --authenticationDatabase admin mydb
+  
+# linux, max 기준
+docker-compose exec mongo \
+  mongosh \
+    --username root \
+    --password example \
+    --authenticationDatabase admin \
+    mydb \
+  < ./init/init-mongo.js 
+```
+
 ## 개발 환경
 - macOS 15.4.1
 - node.js 24.0.1
