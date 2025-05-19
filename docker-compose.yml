@@ -12,7 +12,7 @@ services:
       # MONGO_INITDB_DATABASE: mydb
     # volumes:
     # - ./init:/docker-entrypoint-initdb.d:ro
-#      - ./mongo_data:/data/db
+    #  - ./mongo_data:/data/db
 
   auth:
     build:
@@ -24,6 +24,7 @@ services:
     ports:
       - "3001:3001"
     environment:
+      PORT: 3001
       MONGO_URI: mongodb://root:test@mongodb:27017/mydb?authSource=admin
 
   event:
@@ -36,8 +37,9 @@ services:
     ports:
       - "3002:3002"
     environment:
+      PORT: 3002
       MONGO_URI: mongodb://root:test@mongodb:27017/mydb?authSource=admin
-      
+
   gateway:
     build:
       context: ./gateway
@@ -50,6 +52,7 @@ services:
     ports:
       - "3000:3000"
     environment:
+      PORT: 3000
       MONGO_URI: mongodb://root:test@mongodb:27017/mydb?authSource=admin
       AUTH_SERVICE_URL: http://auth:3001
       EVENT_SERVICE_URL: http://event:3002

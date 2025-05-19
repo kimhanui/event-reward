@@ -9,8 +9,10 @@ import { JwtModule } from '@nestjs/jwt';
   imports: [
     JwtModule.register({}),
     MongooseModule.forRoot(
-      process.env.NODE_ENV === 'production' ? 
-        process.env.MONGO_URI : "mongodb://localhost:27017/mydb?authSource=admin"),
+      process.env.NODE_ENV === 'production'
+        ? process.env.MONGO_URI
+        : 'mongodb://localhost:27017/mydb?authSource=admin',
+    ),
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }])
   ],
   controllers: [AuthController],

@@ -6,13 +6,6 @@ services:
     restart: unless-stopped
     ports:
       - "27018:27017"
-    # environment:
-    #   MONGO_INITDB_ROOT_USERNAME: root
-    #   MONGO_INITDB_ROOT_PASSWORD: test
-      # MONGO_INITDB_DATABASE: mydb
-    volumes:
-    - ./init:/docker-entrypoint-initdb.d:ro
-#      - ./mongo_data:/data/db
 
   event:
     build:
@@ -24,7 +17,7 @@ services:
     ports:
       - "4002:4002"
     environment:
-      MONGO_URI: mongodb://root:test@mongodb:27018/mydb?authSource=admin
+      MONGO_URI: mongodb://mongodb:27018/mydb?authSource=admin
 
 volumes:
   mongo_data:

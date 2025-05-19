@@ -1,8 +1,6 @@
 import axios from 'axios';
-/**
- * $ docker-compose -f docker-compose.e2e.yml up -d
- * $ docker-compose exec -T event-reward-mongodb-1 mongosh --username root --password test --authenticationDatabase admin mydb < ./gateway/test/data/init-mongo.js
- */
+
+// 테스트 데이터는 직접 셋팅해야 됨.
 
 describe('보상 지급 중복 방지 테스트', () => {
   it('100건 빠른 호출 중 duplicate key 로그가 발생해야 한다', async () => {
@@ -12,8 +10,6 @@ describe('보상 지급 중복 방지 테스트', () => {
     };
 
     // 이벤트 보상 요청
-    // axios.post('http://localhost:3000/api/reward/request/test', payload)
-
     const results = await Promise.allSettled(
         Array.from({ length: 1000 }).map(() =>
             axios.post('http://localhost:3000/api/reward/request/test', payload)

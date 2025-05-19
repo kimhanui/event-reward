@@ -1,15 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import {
-  Condition,
-  ConditionDocument,
-} from 'src/db/condition.schema';
 import { Event, EventDocument } from 'src/db/event.schema';
-import {
-  EventCondition,
-  EventConditionDocument
-} from 'src/db/event_condition.schema';
 import { Reward, RewardDocument, RewardType } from 'src/db/reward.schema';
 import {
   RewardRequest,
@@ -25,7 +17,6 @@ import {
 } from 'src/util/common.util';
 import * as util from 'util';
 import {
-  ConditionVO,
   EventVO,
   mapToEventDocument,
   mapToEventVO,
@@ -38,6 +29,7 @@ import {
 import { syncEventRewards, syncRewardEvents } from './event.util';
 import { UserAttendance, UserAttendanceDocument } from '../db/user_attendance.schema';
 import { Role } from 'src/auth/auth.domain';
+
 
 /**
  * JWT 유효성 검사 메서드
@@ -53,103 +45,8 @@ export class EventService {
     private userAttendanceDao: Model<UserAttendanceDocument>,
     @InjectModel(RewardRequest.name)
     private rewardRequestDao: Model<RewardRequestDocument>,
-
-    @InjectModel(Condition.name)
-    private conditionDao: Model<ConditionDocument>,
-    @InjectModel(EventCondition.name)
-    private eventConditionDao: Model<EventConditionDocument>
   ) {}
 
-  async insertCondition(req: any) {
-    const { user } = req;
-    const conditionVO = req.body as ConditionVO;
-
-    if (!conditionVO) {
-      return sendFail(ErrorCode.PARAM001);
-    }
-
-    if (
-      !conditionVO.collection_name ||
-      !conditionVO.field_name ||
-      !conditionVO.field_type ||
-      !conditionVO.user_field_name
-    ) {
-      return sendFail(ErrorCode.PARAM002);
-    }
-
-    const isExistCondition = await this.conditionDao.findOne({
-      collection_name: conditionVO.collection_name,
-      field_name: conditionVO.field_name,
-      field_type: conditionVO.field_type
-    });
-    if (isExistCondition) {
-      return sendFail(ErrorCode.EVENT004);
-    }
-
-    const savedCondition = await this.conditionDao.create(conditionVO);
-
-    return sendSuccess(savedCondition);
-  }
-
-  async updateCondition(req: any) {
-    const { user } = req;
-    const conditionVO = req.body as ConditionVO;
-
-    if (!conditionVO || !isObjectId(conditionVO._id)) {
-      return sendFail(ErrorCode.PARAM001);
-    }
-
-    if (
-      !conditionVO.collection_name ||
-      !conditionVO.field_name ||
-      !conditionVO.field_type ||
-      !conditionVO.user_field_name
-    ) {
-      return sendFail(ErrorCode.PARAM002);
-    }
-
-    const findCondition = await this.conditionDao.findById(conditionVO._id);
-    if (!findCondition) {
-      return sendFail(ErrorCode.EVENT006);
-    }
-
-    const isExistCondition = await this.conditionDao.exists({
-      _id: { $ne: conditionVO._id },
-      collection_name: conditionVO.collection_name,
-      field_name: conditionVO.field_name,
-      field_type: conditionVO.field_type
-    });
-    console.log('isExist', isExistCondition);
-    if (isExistCondition) {
-      return sendFail(ErrorCode.EVENT004);
-    }
-
-    Object.assign(findCondition, conditionVO);
-    await findCondition.save();
-
-    return sendSuccess();
-  }
-
-  async getConditionList(req: any) {
-    const { user } = req;
-    const query = req.query;
-
-    if (!query) {
-      return sendFail(ErrorCode.PARAM001);
-    }
-
-    const page = query.page ?? 0;
-    const size = query.size ?? 0;
-    const findConditionList = await this.conditionDao
-      .find()
-      .sort({ reg_dt: -1 }) // 정렬 기준
-      .skip(page * size) // page: 0부터 시작
-      .limit(size);
-
-    return sendSuccessList(page, size, findConditionList);
-  }
-
-  // TODO conditions, reward_ids 등록 잘 되는지 검증.
   async insertEvent(req: any) {
     const { user } = req;
     const eventVO = req.body as EventVO;
