@@ -9,8 +9,8 @@ import mongoose from 'mongoose';
  */
 @Controller()
 export class AppController {
-  private readonly AUTH_SERVER_URL = 'http://localhost:3001';
-  private readonly EVENT_SERVER_URL = 'http://localhost:3002';
+  private readonly AUTH_SERVER_URL = process.env.AUTH_SERVICE_URL;
+  private readonly EVENT_SERVER_URL = process.env.EVENT_SERVICE_URL;
 
   constructor(
     private readonly httpService: HttpService,

@@ -3,7 +3,7 @@ import { LoginDTO, Role, UserVO } from '../auth/auth.domain';
 import { AuthService } from '../auth/auth.service';
 import { JwtAuthGuard } from 'src/jwt/jwt.guard';
 import { RolesGuard } from 'src/jwt/role.guard';
-import { Roles } from 'src/decorator/roles';
+import { RolesDecorator } from 'src/jwt/roles.decorator';
 import { sendSuccess } from 'src/util/common.util';
 
 @Controller('auth')
@@ -24,7 +24,7 @@ export class AuthController {
   }
 
   // @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @RolesDecorator(Role.ADMIN)
   @Post('user')
   async insertUser(@Body() body: UserVO) {
     const result = await this.authService.insertUser(body);
@@ -32,7 +32,7 @@ export class AuthController {
   }
 
   // @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @RolesDecorator(Role.ADMIN)
   @Put('user/role')
   async updateUser(@Body() body: UserVO) {
     const result = await this.authService.updateUserRole(body);
@@ -47,7 +47,7 @@ export class AuthController {
 
   // 테스트
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @RolesDecorator(Role.ADMIN)
   @Post('admin')
   async xxx(@Body() body: UserVO) {
     return sendSuccess();

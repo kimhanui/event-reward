@@ -21,7 +21,7 @@ import { JwtModule } from '@nestjs/jwt';
   imports: [
     PassportModule, //이게 없으면 jwt 검증 x
     JwtModule.register({}),
-    MongooseModule.forRoot('mongodb://localhost:27017/mydb'), // 이곳에 MongoDB 주소
+    MongooseModule.forRoot(process.env.MONGO_URI),
     MongooseModule.forFeature([
       { name: User.name, schema: UserSchema },
       { name: Event.name, schema: EventSchema },

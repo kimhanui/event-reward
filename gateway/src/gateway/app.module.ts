@@ -18,8 +18,7 @@ import mongoose from 'mongoose';
     EventModule,
     PassportModule,
     JwtModule.register({}),
-    MongooseModule.forRoot('mongodb://localhost:27017/mydb'), // 이곳에 MongoDB 주소
-  
+    MongooseModule.forRoot(process.env.MONGO_URI),
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     HttpModule
   ],

@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Put, Req, UseGuards } from '@nestjs/common';
 import { Role } from 'src/auth/auth.domain';
-import { Roles } from 'src/decorator/roles';
+import { RolesDecorator } from 'src/jwt/roles.decorator';
 import { JwtAuthGuard } from 'src/jwt/jwt.guard';
 import { RolesGuard } from 'src/jwt/role.guard';
 import { EventService } from './event.service';
@@ -13,21 +13,21 @@ export class EventController {
   /* Condition (이벤트 추가/수정 사전 작업) */
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @RolesDecorator(Role.ADMIN)
   @Post('condition')
   async insertConditionData(@Req() req) {
     return await this.eventService.insertCondition(req);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @RolesDecorator(Role.ADMIN)
   @Put('condition')
   async updateConditionData(@Req() req) {
     return await this.eventService.updateCondition(req);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @RolesDecorator(Role.ADMIN)
   @Get('condition')
   async getConditionData(@Req() req) {
     return await this.eventService.getConditionList(req);
@@ -41,14 +41,14 @@ export class EventController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.OPERATOR, Role.ADMIN)
+  @RolesDecorator(Role.OPERATOR, Role.ADMIN)
   @Post()
   async insertEvent(@Req() req) {
     return await this.eventService.insertEvent(req);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.OPERATOR, Role.ADMIN)
+  @RolesDecorator(Role.OPERATOR, Role.ADMIN)
   @Put()
   async updateEvent(@Req() req) {
     return await await this.eventService.updateEvent(req);
@@ -67,56 +67,56 @@ export class EventController {
   /* Reward */
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.OPERATOR, Role.ADMIN)
+  @RolesDecorator(Role.OPERATOR, Role.ADMIN)
   @Post('reward')
   async insertReward(@Req() req) {
     return await this.eventService.insertReward(req);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.OPERATOR, Role.ADMIN)
+  @RolesDecorator(Role.OPERATOR, Role.ADMIN)
   @Put('reward')
   async updateReward(@Req() req) {
     return await this.eventService.updateReward(req);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.OPERATOR, Role.ADMIN)
+  @RolesDecorator(Role.OPERATOR, Role.ADMIN)
   @Get('reward')
   async getReward(@Req() req) {
     return await this.eventService.getReward(req);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.OPERATOR, Role.ADMIN)
+  @RolesDecorator(Role.OPERATOR, Role.ADMIN)
   @Get('reward/list')
   async getRewardList(@Req() req) {
     return await this.eventService.getRewardList(req);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.USER, Role.ADMIN) // TODO: ADMIN - user_id 요청 데이터에?
+  @RolesDecorator(Role.USER, Role.ADMIN) // TODO: ADMIN - user_id 요청 데이터에?
   @Post('reward/request')
   async insertRewardRequest(@Req() req) {
     return await this.eventService.insertRewardRequest(req);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.OPERATOR, Role.ADMIN)
+  @RolesDecorator(Role.OPERATOR, Role.ADMIN)
   @Put('reward/request/confirm')
   async updateRewardRequestState(@Req() req) {
     return await this.eventService.updateRewardRequestState(req);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.OPERATOR, Role.AUDITOR, Role.ADMIN)
+  @RolesDecorator(Role.OPERATOR, Role.AUDITOR, Role.ADMIN)
   @Get('reward/request/list')
   async getRewardRequestAllUserList(@Req() req) {
     return await this.eventService.getRewardRequestAllUserList(req);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.USER, Role.ADMIN) // TODO: ADMIN - user_id 요청 데이터에?
+  @RolesDecorator(Role.USER, Role.ADMIN) // TODO: ADMIN - user_id 요청 데이터에?
   @Get('reward/request/list/my')
   async getRewardRequestMyList(@Req() req) {
     return await this.eventService.getRewardRequestMyList(req);
