@@ -1,9 +1,8 @@
 import { Types } from 'mongoose';
 import { mapToUserVO, UserVO } from 'src/auth/auth.domain';
-import { Event, EventDocument } from 'src/db/event.schema';
-import { Reward, RewardDocument, RewardType } from 'src/db/reward.schema';
+import { Event } from 'src/db/event.schema';
+import { RewardDocument, RewardType } from 'src/db/reward.schema';
 import { RewardRequestDocument } from 'src/db/reward_request.schema';
-import { User, UserDocument } from 'src/db/user.schema';
 
 export interface EventVO {
   _id: string;
@@ -91,59 +90,10 @@ export function mapToEventVO(eventDoc: any): EventVO {
         typeof reward === 'object' ? reward._id.toString() : reward.toString()
       ) ?? [],
 
-    // TODO ids만 필요할 듯 해 안 넣음.
-    // rewards: RewardVO[] | undefined
-    // rewards: Array.isArray(eventDoc.reward_ids)
-    //   ? eventDoc.reward_ids
-    //       .filter((reward: any) => typeof reward === 'object') // -> [] or RewardVO[]
-    //       .map(
-    //         (reward: any): RewardVO => ({
-    //           _id: reward._id.toString(),
-    //           type: reward.type,
-    //           target_id: reward.target_id,
-    //           amount: reward.amount,
-    //           reg_dt: reward.reg_dt,
-    //           upd_dt: reward.upd_dt,
-    //         })
-    //       )
-    //   : undefined,
-
     conditions: eventDoc.conditions
-    //   eventDoc.conditions?.map(
-    //     (cond: any): EventConditionVO => ({
-    //       condition_id:
-    //         typeof cond.condition_id === 'object'
-    //           ? cond.condition_id._id.toString()
-    //           : cond.condition_id.toString(),
-
-    //       condition:
-    //         typeof cond.condition_id === 'object'
-    //           ? {
-    //               _id: cond.condition_id._id.toString(),
-    //               collection_name: cond.condition_id.collection_name,
-    //               field_name: cond.condition_id.field_name,
-    //               field_type: cond.condition_id.field_type,
-    //               user_field_name: cond.condition_id.user_field_name
-    //             }
-    //           : undefined,
-
-    //       cal_type: cond.cal_type,
-    //       str_val: cond.str_val,
-    //       min_num: cond.min_num,
-    //       max_num: cond.max_num,
-    //       reg_dt: cond.reg_dt,
-    //       upd_dt: cond.upd_dt
-    //     })
-    //   ) ?? []
   };
 }
 
-/**
- * 기존 이벤트 수정 시:
- * const eventDoc = await this.eventModel.findById(eventVO._id);
- * Object.assign(eventDoc, reverseMapEvent(eventVO));
- * await eventDoc.save();
- */
 export function mapToEventDocument(
   eventVO: EventVO
 ): Event | { _id: Types.ObjectId } {
@@ -164,16 +114,6 @@ export function mapToEventDocument(
     reward_ids: eventVO.reward_ids?.map((id) => new Types.ObjectId(id)) ?? [],
 
     conditions: eventVO.conditions
-
-    //   eventVO.conditions?.map((cond: EventConditionVO) => ({
-    //     condition_id: new Types.ObjectId(cond.condition_id),
-    //     cal_type: cond.cal_type,
-    //     str_val: cond.str_val,
-    //     min_num: cond.min_num,
-    //     max_num: cond.max_num,
-    //     reg_dt: cond.reg_dt,
-    //     upd_dt: cond.upd_dt
-    //   })) ?? []
   };
 }
 
@@ -191,11 +131,6 @@ export function mapToRewardVO(rewardDoc: any): RewardVO {
       rewardDoc.event_ids?.map((id: any) =>
         typeof id === 'object' ? id._id.toString() : id.toString()
       ) ?? []
-    // TODO ids만 필요할 듯 해 안 넣음.
-    // events:
-    //   rewardDoc.event_ids
-    //     ?.filter((e: any) => typeof e === 'object')
-    //     .map(mapEvent) ?? []
   };
 }
 

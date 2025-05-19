@@ -20,17 +20,11 @@ export class AppService {
         return false;
       }
 
-      // TTL이 실시간 처리되지 않음므로 미사용
-      // const findToken = await this.tokenDao.exists({user_id: payload.userId, type: 'AT'});
-      // if(!findToken) {
-      //   return false;
-      // }
-
       const findUser = await this.userDao.findOne({_id: payload.userId});
       if(!findUser){
         return false
       }
-      // console.log('JwtStrategy:', findUser.expire_dt < new Date(), findUser.expire_dt, new Date(), );
+      
       if (findUser.expire_dt < new Date()) {
         console.log('Token Invalid:', findUser._id, ', token 만료(로그아웃)');
         return false;

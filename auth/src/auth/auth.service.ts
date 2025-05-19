@@ -13,10 +13,8 @@ import {
   UserVO
 } from './auth.domain';
 
-// TODO auth 서버로 이동
 @Injectable()
 export class AuthService {
-  // TODO 환경변수 처리
   private readonly ACCESS_SECRET = 'ACCESS_SECRET';
   private readonly REFRESH_SECRET = 'REFRESH_SECRET';
   private readonly ACCESS_DURATION = 15 * 60; // 15m

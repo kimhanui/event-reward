@@ -4,29 +4,24 @@ import { JwtModule } from '@nestjs/jwt';
 import { MongooseModule } from '@nestjs/mongoose';
 import { PassportModule } from '@nestjs/passport';
 import { User, UserSchema } from 'src/db/user.schema';
-import { AuthModule } from '../auth/auth.module';
 import { JwtStrategy } from '../jwt/jwt.strategy';
-import { AppService } from './app.service';
-import { AppController } from './app.controller';
-import { EventModule } from 'src/event/event.module';
-import { APP_GUARD } from '@nestjs/core';
-
+import { AppController } from './gateway.controller';
+import { AppService } from './gateway.service';
 
 @Module({
   imports: [
-    AuthModule,
-    EventModule,
     PassportModule,
     JwtModule.register({}),
-    MongooseModule.forRoot(process.env.MONGO_URI),
+    MongooseModule.forRoot(
+      process.env.NODE_ENV === 'production'
+        ? process.env.MONGO_URI
+        : 'mongodb://localhost:27017/mydb?authSource=admin'
+    ),
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     HttpModule
   ],
   controllers: [AppController],
-  providers: [
-    AppService,
-    JwtStrategy,
-  ],
+  providers: [AppService, JwtStrategy],
   exports: [MongooseModule]
 })
 export class AppModule {}

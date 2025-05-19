@@ -2,8 +2,8 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
+import { AppService } from 'src/gateway/gateway.service';
 import { Payload } from '../auth/auth.domain';
-import { AppService } from 'src/gateway/app.service';
 
 // JwtAuthGuard 내부에서 JwtStrategy를 호출해 토큰 파싱, 검증 수행.
 @Injectable()
