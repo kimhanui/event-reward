@@ -34,8 +34,8 @@ export class AuthService {
 
     if (
       !(4 <= user._id?.length && user._id?.length <= 10) || // id : 4~10자
-      !(4 <= user.pw?.length && user.pw?.length <= 10) || // pw : 4~10자
-      !Object.values(Role).includes(user.role)
+      !(4 <= user.pw?.length && user.pw?.length <= 10) //|| // pw : 4~10자
+      // !Object.values(Role).includes(user.role)
     ) {
       return sendFail(ErrorCode.PARAM002);
     }
@@ -48,8 +48,9 @@ export class AuthService {
     const resultUser = await this.userDao.create({
       _id: user._id,
       pw: await this.bycryptPassword(user.pw),
-      role: user.role
+      role: Role.USER // 고정
     });
+
     // const uuser = convertToUserVO(resultUser);
     return sendSuccess(resultUser);
   }
@@ -166,15 +167,19 @@ export class AuthService {
     return sendSuccess();
   }
 
-  async refreshToken(input: { refresh_token }): Promise<ResponseDTO> {
-    const refreshToken = input.refresh_token;
-    const verfiedPayload = this.jwtService.verify(refreshToken, {
+  async refreshToken(req: any): Promise<ResponseDTO> {
+    const authHeader = req.headers['authorization'] || req.headers['Authorization'];
+
+    const headerSlice = 'Bearer '.length;
+    let refreshToken = authHeader.slice(headerSlice);
+    
+    const verifiedPayload = this.jwtService.verify(refreshToken, {
       secret: this.REFRESH_SECRET
     });
     const payload: Payload = {
-      userId: verfiedPayload.userId,
-      role: verfiedPayload.role,
-      expire_dt: verfiedPayload.expire_dt,
+      userId: verifiedPayload.userId,
+      role: verifiedPayload.role,
+      expire_dt: verifiedPayload.expire_dt,
     };
 
     const findUser = await this.userDao.findOne({ _id: payload.userId });

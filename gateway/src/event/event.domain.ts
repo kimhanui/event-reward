@@ -1,7 +1,7 @@
 import { Types } from 'mongoose';
 import { mapToUserVO, UserVO } from 'src/auth/auth.domain';
 import { Event, EventDocument } from 'src/db/event.schema';
-import { RewardDocument, RewardType } from 'src/db/reward.schema';
+import { Reward, RewardDocument, RewardType } from 'src/db/reward.schema';
 import { RewardRequestDocument } from 'src/db/reward_request.schema';
 import { User, UserDocument } from 'src/db/user.schema';
 
@@ -66,6 +66,7 @@ export interface RewardRequestVO {
 
   event_id: string;
   event: EventVO;
+  rewards: RewardVO[];
 }
 
 /**** event mapper ****/
@@ -228,12 +229,22 @@ export function mapToRewardRequestVO(doc: RewardRequestDocument): RewardRequestV
     user:
       typeof doc.user_id === 'object' ? mapToUserVO(doc.user_id) : undefined,
 
-    event_id: 
+    event_id:
       typeof doc.event_id === 'object'
         ? doc.event_id._id?.toString()
-        : doc.event_id
-    ,
-    event: typeof doc.event_id === 'object' ? mapToEventVO(doc.event_id) : undefined
+        : doc.event_id,
+    event:
+      typeof doc.event_id === 'object' ? mapToEventVO(doc.event_id) : undefined,
+
+    rewards: doc.rewards?.map((reward) => {
+        return {
+          _id: (reward as any)._id,
+          type: reward.type,
+          target_id: reward.target_id,
+          amount: reward.amount,
+          reg_dt: reward.reg_dt,
+          upd_dt: reward.upd_dt
+        };})
   };
 }
 

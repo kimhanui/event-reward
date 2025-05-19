@@ -1,78 +1,74 @@
 use mydb;
+
+// pw: 모두 admin
 db.users.insertMany([
 	{
 		_id: "admin",
-		pw: "admin",
+		pw: "$2b$10$AEcaV08zNAdYbZGeghZ.tusWLoWJcKI76tc97yzJMP0XY3tK2oFfq", 
 		role: "ADMIN",
-		reg_dt: new Date(),
+		reg_dt: ISODate(),
 	},
 	{
 		_id: "aaaa",
-		pw: "aaaa",
+		pw: "$2b$10$AEcaV08zNAdYbZGeghZ.tusWLoWJcKI76tc97yzJMP0XY3tK2oFfq",
 		role: "USER",
-		reg_dt: new Date(),
+		reg_dt: ISODate(),
 	},
 	{
 		_id: "bbbb",
-		pw: "bbbb",
+		pw: "$2b$10$AEcaV08zNAdYbZGeghZ.tusWLoWJcKI76tc97yzJMP0XY3tK2oFfq",
 		role: "USER",
-		reg_dt: new Date(),
+		reg_dt: ISODate(),
 	},
 	{
 		_id: "oooo",
-		pw: "oooo",
+		pw: "$2b$10$AEcaV08zNAdYbZGeghZ.tusWLoWJcKI76tc97yzJMP0XY3tK2oFfq",
 		role: "OPERATOR",
-		reg_dt: new Date(),
+		reg_dt: ISODate(),
 	},
 	{
-		_id: "audi",
-		pw: "audi",
+		_id: "audit",
+		pw: "$2b$10$AEcaV08zNAdYbZGeghZ.tusWLoWJcKI76tc97yzJMP0XY3tK2oFfq",
 		role: "AUDITOR",
-		reg_dt: new Date(),
+		reg_dt: ISODate(),
 	},
 ]);
 print('insert [users]: done');
 
-db.events.insertOne(
-	{
-		"_id" : new ObjectId('665a2234567890abcdef5678'),
-		"title": "이벤트1",
-		"content": "테스트",
-		"start_dt": new Date("2025-05-18T00:00:0Z"),
-		"end_dt": "",
-		"active_yn": true,
-		"reward_manual_yn": false,
-		"conditions": ["{\"user_id\": '%s', \"check_cnt\": {\"%gte\" : 3}}"],
-		"reward_ids": [new ObjectId('665a3334567890abcdef9999'), new ObjectId('665a3334567890abcdef9998')],
-	}
-);
+db.events.insertOne({
+	"_id": ObjectId("665a2234567890abcdef5678"),
+	"title": "이벤트1",
+	"content": "테스트",
+	"start_dt": ISODate("2025-05-18T00:00:00Z"),
+	"end_dt": "",
+	"active_yn": true,
+	"reward_manual_yn": false,
+	"conditions": ["{\"user_id\": \"%s\", \"check_cnt\": {\"$gte\": 3}}"],
+	"reward_ids": [ObjectId("665a3334567890abcdef9999"), ObjectId("665a3334567890abcdef9998")],
+});
 print('insert [events]: done');
 
 db.rewards.insertMany([
 	{
-		"_id": new ObjectId('665a3334567890abcdef9999'),
+		"_id": ObjectId("665a3334567890abcdef9999"),
 		"type": "CP",
 		"target_id": "cp123",
 		"amount": 1,
-		"event_ids": [new ObjectId('665a2234567890abcdef5678')]
+		"event_ids": [ObjectId("665a2234567890abcdef5678")]
 	},
 	{
-		"_id": new ObjectId('665a3334567890abcdef9998'),
+		"_id": ObjectId("665a3334567890abcdef9998"),
 		"type": "CP",
 		"target_id": "cp456",
 		"amount": 1,
-		"event_ids": [new ObjectId('665a2234567890abcdef5678')]
+		"event_ids": [ObjectId("665a2234567890abcdef5678")]
 	}
 ]);
 print('insert [rewards]: done');
 
 db.userattendances.insertOne({
 	user_id: "aaaa",
-	last_check_dt: new Date("2025-05-21T00:00:0Z"),
+	last_check_dt: ISODate("2025-05-21T00:00:00Z"),
 	check_cnt: 3,
-})
+});
 print('insert [userattendances]: done');
-// initMongo()
-// 실행: mongosh < init-mongo.js
-// 인덱스 확인: db.tokens.getIndexes();
-// 컬렉션 제거: db.getCollection(collName).drop();

@@ -55,6 +55,8 @@ export enum ErrorCode {
   EVENT009 = 'EVENT009',
   EVENT010 = 'EVENT010',
   EVENT011 = 'EVENT011',
+  EVENT012 = 'EVENT012',
+  EVENT013 = 'EVENT013',
   PARAM001 = 'PARAM001',
   PARAM002 = 'PARAM002',
   PARAM003 = 'PARAM003',
@@ -77,8 +79,17 @@ const ErrorMessage: Record<ErrorCode, string> = {
   [ErrorCode.EVENT009]: '이미 요청한 이벤트의 보상을 지급받았습니다.',
   [ErrorCode.EVENT010]: '이미 요청한 이벤트의 보상 지급을 신청했습니다.',
   [ErrorCode.EVENT011]: '존재하지 않는 보상 정보 입니다.',
+  [ErrorCode.EVENT012]: '이미 요청한 이벤트의 보상 지급이 실패했습니다.',
+  [ErrorCode.EVENT013]: '이벤트의 보상 신청이 실패했습니다.',
   [ErrorCode.PARAM001]: '파라미터가 존재하지 않습니다.',
   [ErrorCode.PARAM002]: '파라미터가 유효하지 않습니다.',
   [ErrorCode.PARAM003]: '기존과 동일한 값입니다.',
   [ErrorCode.ERR001]: '서버 에러 발생.'
 };
+
+export function isObjectId(str: string) {
+  if(!str || str.length != 24) {
+    return false;
+  }
+  return true;
+}

@@ -23,15 +23,13 @@ export class AuthController {
     return result;
   }
 
-  // @UseGuards(JwtAuthGuard, RolesGuard)
-  @RolesDecorator(Role.ADMIN)
   @Post('user')
   async insertUser(@Body() body: UserVO) {
     const result = await this.authService.insertUser(body);
     return result;
   }
 
-  // @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @RolesDecorator(Role.ADMIN)
   @Put('user/role')
   async updateUser(@Body() body: UserVO) {
@@ -39,17 +37,10 @@ export class AuthController {
     return result;
   }
 
+  @UseGuards(JwtAuthGuard)
   @Put('user/refresh/token')
-  async refreshToken(@Body() body: {refresh_token}) {
-    const result = await this.authService.refreshToken(body);
+  async refreshToken(@Req() req: any) {
+    const result = await this.authService.refreshToken(req);
     return result;
-  }
-
-  // 테스트
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @RolesDecorator(Role.ADMIN)
-  @Post('admin')
-  async xxx(@Body() body: UserVO) {
-    return sendSuccess();
   }
 }

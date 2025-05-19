@@ -18,6 +18,7 @@ import {
 import { User, UserDocument } from 'src/db/user.schema';
 import {
   ErrorCode,
+  isObjectId,
   sendFail,
   sendSuccess,
   sendSuccessList
@@ -29,12 +30,14 @@ import {
   mapToEventDocument,
   mapToEventVO,
   mapToRewardDocument,
+  mapToRewardRequestVO,
   mapToRewardVO,
   RewardRequestVO,
   RewardVO
 } from './event.domain';
 import { syncEventRewards, syncRewardEvents } from './event.util';
 import { UserAttendance, UserAttendanceDocument } from '../db/user_attendance.schema';
+import { Role } from 'src/auth/auth.domain';
 
 /**
  * JWT 유효성 검사 메서드
@@ -92,7 +95,7 @@ export class EventService {
     const { user } = req;
     const conditionVO = req.body as ConditionVO;
 
-    if (!conditionVO || !conditionVO._id) {
+    if (!conditionVO || !isObjectId(conditionVO._id)) {
       return sendFail(ErrorCode.PARAM001);
     }
 
@@ -182,11 +185,11 @@ export class EventService {
   async updateEvent(req: any) {
     const { user } = req;
     const eventVO = req.body as EventVO;
-    if (!eventVO || !eventVO._id) {
+    if (!eventVO || !isObjectId(eventVO._id)) {
       return sendFail(ErrorCode.PARAM001);
     }
 
-    if (!eventVO._id || !eventVO.title || !eventVO.content) {
+    if (!eventVO.title || !eventVO.content) {
       return sendFail(ErrorCode.PARAM002);
     }
     if (
@@ -230,8 +233,8 @@ export class EventService {
   }
 
   async getEvent(req: any) {
-    const eventVO = req.params as EventVO;
-    if (!eventVO || !eventVO._id) {
+    const eventVO = req.query as EventVO;
+    if (!eventVO || !isObjectId(eventVO._id)) {
       return sendFail(ErrorCode.PARAM001);
     }
 
@@ -278,7 +281,7 @@ export class EventService {
     const { user } = req;
     const rewardVO = req.body as RewardVO;
 
-    if (!rewardVO && !rewardVO._id) {
+    if (!rewardVO && !isObjectId(rewardVO._id)) {
       return sendFail(ErrorCode.PARAM001);
     }
 
@@ -295,7 +298,9 @@ export class EventService {
     if (!findReward) {
       return sendFail(ErrorCode.EVENT011);
     }
+
     const newReward = mapToRewardDocument(rewardVO);
+
     try {
       await syncRewardEvents(
         findReward,
@@ -307,38 +312,13 @@ export class EventService {
       console.error('syncRewardEvents', err);
       return sendFail(ErrorCode.ERR001);
     }
-    // // Object.assign(findReward, mapToRewardDocument(rewardVO));
-    // // findReward.save();
-
-    // const originEventIds = findReward.event_ids;
-    // const updateResult = await this.rewardDao.updateOne(
-    //   { _id: rewardVO._id },
-    //   mapToRewardDocument(rewardVO) ,
-    //   {
-    //     $addToSet: {
-    //       event_ids: {
-    //         $each: rewardVO.event_ids.map((id) => new Types.ObjectId(id))
-    //       }
-    //     }
-    //   }
-    // );
-
-    // if (rewardVO.event_ids?.length > 0){
-    //   // reward - event
-    //   await this.eventDao.updateMany(
-    //     {
-    //       _id: { $in: rewardVO.event_ids.map((id) => new Types.ObjectId(id)) }
-    //     },
-    //     { $addToSet: { event_ids: new Types.ObjectId(rewardVO._id) } }
-    //   );
-    // }
 
     return sendSuccess();
   }
 
   async getReward(req: any) {
     const rewardVO = req.query as RewardVO;
-    if (!rewardVO || !rewardVO._id) {
+    if (!rewardVO || !isObjectId(rewardVO._id)) {
       return sendFail(ErrorCode.PARAM001);
     }
 
@@ -376,61 +356,81 @@ export class EventService {
     if (
       !rewardRequestVO.user_id ||
       !rewardRequestVO.event_id ||
-      rewardRequestVO.event_id.length != 24 // TODO 다른쪽에도 적용하기
+      !isObjectId(rewardRequestVO.event_id)
     ) {
       return sendFail(ErrorCode.PARAM002);
     }
 
-    const eventVO = await this.eventDao
+    const eventDoc = await this.eventDao
       .findById(rewardRequestVO.event_id)
       .populate('reward_ids');
-    console.log('reward_ids:', eventVO.reward_ids);
+    // console.log('reward_ids:', eventDoc.reward_ids);
 
-    if (!eventVO) {
+    if (!eventDoc) {
       return sendFail(ErrorCode.EVENT007);
     }
 
     // 이벤트 현재 진행중인지 검증
     const currDateTime = new Date();
     if (
-      (eventVO.start_dt && eventVO.start_dt > currDateTime) ||
-      (eventVO.end_dt && eventVO.end_dt < currDateTime) ||
-      eventVO.active_yn == false
+      (eventDoc.start_dt && eventDoc.start_dt > currDateTime) ||
+      (eventDoc.end_dt && eventDoc.end_dt < currDateTime) ||
+      eventDoc.active_yn == false
     ) {
       return sendFail(ErrorCode.EVENT008);
     }
 
     // 요청 이력 검증
     const findRewardRequest = await this.rewardRequestDao.findOne({
-      //0, 1 둘 중 하나만 존재함.
+      //0, 1은 둘 중 하나만 존재함.
       user_id: rewardRequestVO.user_id,
       event_id: rewardRequestVO.event_id,
       request_state: { $in: [0, 1] }
     });
 
-    if (findRewardRequest.request_state == 1) {
+    // console.log('findRewardRequest', findRewardRequest);
+
+    // 존재할 경우 실패 처리
+    if (findRewardRequest && findRewardRequest.request_state == 1) {
       return sendFail(ErrorCode.EVENT009);
     }
-    if (findRewardRequest.request_state == 0) {
+    if (findRewardRequest && findRewardRequest.request_state == 0) {
       return sendFail(ErrorCode.EVENT010);
     }
 
-    const savedData = await this.rewardRequestDao.create(rewardRequestVO);
+    let savedData = null;
+    try {
+      rewardRequestVO.request_state = 0;
+      savedData = await this.rewardRequestDao.insertOne(rewardRequestVO);
+    } catch (err) {
+      if (err.code === 11000) {
+        console.warn('reward request already pending:', err);
+        return sendFail(ErrorCode.EVENT010);
+      }
+    }
 
     // 수동 보상 지급 시 처리 종료
-    if (eventVO.reward_manual_yn) {
+    if (eventDoc.reward_manual_yn) {
       return sendSuccess(savedData);
     }
 
     // 자동 보상 지급 처리
-    const resultUserSuccess = await this.isUserEventSuccess(
-      user.user_id,
-      eventVO.conditions
+    const fulfilledResult = await this.isUserEventFulfilled(
+      rewardRequestVO.user_id,
+      eventDoc.conditions
     );
 
-    await this.confirmRewardRequest(resultUserSuccess, savedData);
+    const result = await this.confirmRewardRequest(
+      fulfilledResult,
+      savedData,
+      eventDoc.reward_ids
+    );
 
-    return resultUserSuccess;
+    // test용
+    if (result.code == 'ERR001') {
+      return result;
+    }
+    return fulfilledResult;
   }
 
   async updateRewardRequestState(req: any) {
@@ -457,8 +457,6 @@ export class EventService {
       return sendFail(ErrorCode.EVENT007);
     }
 
-
-
     // 현재 진행중인지 검증
     // const currDateTime = new Date()
     // if ((findEvent.start_dt && findEvent.start_dt > currDateTime) ||
@@ -468,23 +466,35 @@ export class EventService {
     // }
   }
 
-  async confirmRewardRequest(resultUserSuccess: any, rewardRequestDoc: any) {
-    if (resultUserSuccess.code === 'OK') {
+  async confirmRewardRequest(
+    fulfilledResult: any,
+    rewardRequestDoc: any,
+    rewardsDoc?: any[]
+  ) {
+    if (fulfilledResult.code === 'OK') {
       rewardRequestDoc.request_state = 1; // 성공
       rewardRequestDoc.upd_dt = new Date();
       rewardRequestDoc.confirm_user_id = 'System';
+      rewardRequestDoc.rewards = rewardsDoc.map((e) => ({
+        _id: e._id,
+        type: e.type,
+        target_id: e.target_id,
+        amount: e.amount
+      }));
 
       try {
-        resultUserSuccess.value =
+        fulfilledResult.value =
           await this.rewardRequestDao.insertOne(rewardRequestDoc);
       } catch (err) {
         // 이미 처리 됨
         if (err.code === 11000) {
           console.warn('reward request already successes:', err);
+          return sendFail(ErrorCode.EVENT009);
         }
       }
     } else {
       rewardRequestDoc.request_state = 2; // 실패
+      rewardRequestDoc.failed_reason = `${fulfilledResult.code}:${fulfilledResult.message}`; // 실패
       rewardRequestDoc.upd_dt = new Date();
       rewardRequestDoc.confirm_user_id = 'System';
 
@@ -494,32 +504,18 @@ export class EventService {
         // 이미 처리 됨
         if (err.code === 11000) {
           console.warn('reward request already failed:', err);
+          return sendFail(ErrorCode.EVENT012);
         }
       }
     }
+    return sendSuccess();
   }
 
-  // todo 유효성 검사 실패는 -1로 기록
-  async insertRewardRequestHistory(savedData: any, state: number) {
-    savedData.request_state = 2; // 실패
-    savedData.upd_dt = new Date();
-    savedData.confirm_user_id = 'System';
-
-    try {
-      await this.rewardRequestDao.insertOne(savedData);
-    } catch (err) {
-      // 이미 처리 됨
-      if (err.code === 11000) {
-        console.warn('reward request already failed:', err);
-      }
-    }
-  }
-
-  async isUserEventSuccess(userId: string, conditions: string[]) {
+  async isUserEventFulfilled(userId: string, conditions: string[]) {
     // 지급 조건 검증
     for (const element of conditions) {
       let whereClause = util.format(element, userId);
-      console.log('whereClause:', whereClause);
+      console.log('== fulfilled check whereClause:', whereClause);
       const parsed = JSON.parse(whereClause);
 
       const result = await this.userAttendanceDao.exists(parsed);
@@ -536,10 +532,9 @@ export class EventService {
     const query = req.query;
 
     const findEvent = await this.eventDao.findById(query.event_id);
-    // .populate('conditions.condition_id'); // fixme: 지워도 되나?
 
     // 지급 조건 검증
-    return await this.isUserEventSuccess(user.user_id, findEvent.conditions);
+    return await this.isUserEventFulfilled(user.user_id, findEvent.conditions);
   }
 
   // FIXME: major issue - conditions 필드
@@ -626,10 +621,57 @@ export class EventService {
     }
     return sendSuccess();
   }
+
   async getRewardRequestAllUserList(req: any) {
-    throw new Error('Method not implemented.');
+    const { user } = req;
+
+    const page = req.query.page ?? 0;
+    const size = req.query.size ?? 10;
+    const search_user_id = req.query.user_id;
+    const search_event_id = req.query.event_id;
+    const search_request_state = req.query.request_state;
+    console.log('req.query', req.query);
+
+    const where_clause = {};
+    if (search_user_id) where_clause['user_id'] = search_user_id;
+    if (search_event_id) where_clause['event_id'] = search_event_id;
+    if (search_request_state)
+      where_clause['request_state'] = search_request_state;
+    console.log('where_clause', where_clause);
+
+    const userRequestList = await this.rewardRequestDao
+      .find(where_clause)
+      .sort({ reg_dt: -1 }) // 정렬 기준
+      .skip(page * size) // page: 0부터 시작
+      .limit(size);
+
+    console.log(
+      'userRequestList',
+      userRequestList.filter((e) => typeof e.event_id === 'object')
+    );
+    const userRequestDTO = userRequestList.map(mapToRewardRequestVO);
+    return sendSuccessList(page, size, userRequestDTO);
   }
+
   async getRewardRequestMyList(req: any) {
-    throw new Error('Method not implemented.');
+    const { user } = req;
+
+    let user_id = user.userId;
+
+    if (req.user.role == Role.ADMIN) {
+      user_id = req.query.user_id;
+    }
+
+    const page = req.query.page ?? 0;
+    const size = req.query.size ?? 10;
+
+    const userRequestList = await this.rewardRequestDao
+      .find({ user_id: user_id })
+      .sort({ reg_dt: -1 }) // 정렬 기준
+      .skip(page * size) // page: 0부터 시작
+      .limit(size);
+
+    const requestList = userRequestList.map(mapToRewardRequestVO);
+    return sendSuccessList(page, size, requestList);
   }
 }

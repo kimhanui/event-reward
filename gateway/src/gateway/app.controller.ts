@@ -3,6 +3,7 @@ import { Controller, Get, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../jwt/jwt.guard';
 import { AppService } from './app.service';
 import mongoose from 'mongoose';
+import { Throttle } from '@nestjs/throttler';
 
 /**
  * Proxy 역할의 컨트롤러

@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { Role } from '../auth/auth.domain';
+import { Reward, RewardDocument, RewardSchema } from './reward.schema';
 
 export type RewardRequestDocument = RewardRequest & Document;
 
@@ -18,11 +19,14 @@ export class RewardRequest {
   @Prop()
   upd_dt: Date;
 
-  @Prop({ type: [Types.ObjectId], ref: 'User', required: true })
+  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   user_id: Types.ObjectId; //	요청한 유저 id
 
-  @Prop({ type: [Types.ObjectId], ref: 'Event', required: true })
+  @Prop({ type: Types.ObjectId, ref: 'Event', required: true })
   event_id: Types.ObjectId; //	이벤트 id
+
+  @Prop({ type: [RewardSchema] })
+  rewards: Reward[]; //	지급 내역 (embedded array)
 
   @Prop()
   confirm_user_id: string; //	처리 담당자 id (수동지급용)

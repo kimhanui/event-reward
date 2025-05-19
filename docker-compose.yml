@@ -9,9 +9,9 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: test
-      MONGO_INITDB_DATABASE: mydb
-    volumes:
-    - ./init:/docker-entrypoint-initdb.d:ro
+      # MONGO_INITDB_DATABASE: mydb
+    # volumes:
+    # - ./init:/docker-entrypoint-initdb.d:ro
 #      - ./mongo_data:/data/db
 
   auth:
@@ -37,7 +37,7 @@ services:
       - "3002:3002"
     environment:
       MONGO_URI: mongodb://root:test@mongodb:27017/mydb?authSource=admin
-
+      
   gateway:
     build:
       context: ./gateway

@@ -4,7 +4,8 @@
 
 ## 실행 방법
 ```
-docker-compose up --build -d
+docker-compose up  -d # 개발 중 변경 적용하려면 --build 붙이기
+docker-compose down -v # mongodb 볼륨 비우는 용도
 ```
 
 ```
@@ -13,13 +14,7 @@ Get-Content .\init\init-mongo.js `
   | docker-compose exec -T mongodb mongosh --username root --password test --authenticationDatabase admin mydb
   
 # linux, max 기준
-docker-compose exec mongo \
-  mongosh \
-    --username root \
-    --password example \
-    --authenticationDatabase admin \
-    mydb \
-  < ./init/init-mongo.js 
+docker-compose exec -T mongodb mongosh --username root --password test --authenticationDatabase admin mydb < ./init/init-mongo.js
 ```
 
 ## 개발 환경

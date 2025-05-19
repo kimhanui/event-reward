@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:latest
+    restart: unless-stopped
+    ports:
+      - "27018:27017"
+    # environment:
+    #   MONGO_INITDB_ROOT_USERNAME: root
+    #   MONGO_INITDB_ROOT_PASSWORD: test
+      # MONGO_INITDB_DATABASE: mydb
+    volumes:
+    - ./init:/docker-entrypoint-initdb.d:ro
+#      - ./mongo_data:/data/db
+
+  event:
+    build:
+      context: ./event
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - mongodb
+    ports:
+      - "4002:4002"
+    environment:
+      MONGO_URI: mongodb://root:test@mongodb:27018/mydb?authSource=admin
+
+volumes:
+  mongo_data:
+

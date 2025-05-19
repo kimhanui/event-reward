@@ -9,7 +9,7 @@ import { JwtStrategy } from '../jwt/jwt.strategy';
 import { AppService } from './app.service';
 import { AppController } from './app.controller';
 import { EventModule } from 'src/event/event.module';
-import mongoose from 'mongoose';
+import { APP_GUARD } from '@nestjs/core';
 
 
 @Module({
@@ -23,8 +23,10 @@ import mongoose from 'mongoose';
     HttpModule
   ],
   controllers: [AppController],
-  providers: [AppService, JwtStrategy],
+  providers: [
+    AppService,
+    JwtStrategy,
+  ],
   exports: [MongooseModule]
 })
-export class AppModule {
-}
+export class AppModule {}
