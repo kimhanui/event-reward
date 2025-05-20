@@ -7,7 +7,7 @@
 ## 실행 방법
 
 ```
-docker-compose up -d # 컨테이너 실행
+docker-compose up --build -d # 컨테이너 실행
 docker-compose down  # 컨테이너 종료
 ```
 
