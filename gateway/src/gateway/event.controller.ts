@@ -137,16 +137,18 @@ export class EventController {
   }
 
   // 조건 만족 여부
-  @Get('/external/user/success')
+  @Get('user/success')
   async isUserEventSuccess(@Req() req) {
-    const url = `${this.EVENT_SERVER_URL}${req.url.replace(this.EXTERNAL_PATH_PREFIX, '')}`;
+    const url = `${this.EVENT_SERVER_URL}${req.url.replace(this.REWARD_PATH_PREFIX, '')}`;
     const result = await firstValueFrom(this.httpService.get(url, {params: req.params}));
     return result.data;
   }
 
-  @Get('/external/user/attendance')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @RolesDecorator(Role.USER)
+  @Get('user/attendance')
   async userAttendance(@Req() req) {
-    const url = `${this.EVENT_SERVER_URL}${req.url.replace(this.EXTERNAL_PATH_PREFIX, '')}`;
+    const url = `${this.EVENT_SERVER_URL}${req.url.replace(this.REWARD_PATH_PREFIX, '')}`;
     const result = await firstValueFrom(this.httpService.get(url, {params: req.params}));
     return result.data;
   }

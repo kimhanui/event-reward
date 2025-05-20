@@ -74,7 +74,7 @@ export class EventService {
 
     const savedEvent = await this.eventDao.create(newEventVO);
 
-    return savedEvent;
+    return sendSuccess(savedEvent);
   }
 
   async updateEvent(x_user_id: string, req: any) {

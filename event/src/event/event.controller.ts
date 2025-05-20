@@ -81,7 +81,7 @@ export class EventController {
   }
 
   // 조건 만족 여부
-  @Get('/user/success')
+  @Get('user/success')
   async isUserEventSuccess(@Query() req) {
     if (req.query.user_id) {
       req.user = {
@@ -92,8 +92,8 @@ export class EventController {
   }
 
   // 출석체크
-  @Get('/user/attendance')
+  @Get('user/attendance')
   async userAttendance(@Query() req) {
-    return await this.eventService.userAttendance(req.query.user_id);
+    return await this.eventService.userAttendance(req.x_user_id);
   }
 }
