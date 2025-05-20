@@ -133,8 +133,11 @@ export class EventService {
     }
 
     const findEvent = await this.eventDao.findById(eventVO._id);
-    const resultEvent = mapToEventVO(findEvent);
-    return sendSuccess(resultEvent);
+    if(findEvent){
+      const resultEvent = mapToEventVO(findEvent);
+      return sendSuccess(resultEvent);
+    }
+    return sendSuccess();
   }
 
   async getEventList(x_user_id: string, req: any) {
@@ -217,9 +220,11 @@ export class EventService {
     }
 
     const findReward = await this.rewardDao.findById(rewardVO._id);
-    const resultVO = mapToRewardVO(findReward);
-
-    return sendSuccess(resultVO);
+    if(findReward) {
+      const resultVO = mapToRewardVO(findReward)
+      return sendSuccess(resultVO);
+    }
+    return sendSuccess();
   }
 
   async getRewardList(x_user_id: string, req: any) {
