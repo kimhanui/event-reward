@@ -6,10 +6,9 @@ import { RolesDecorator } from 'src/jwt/roles.decorator';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 
-// TODO 서비스단 input에 더 구체적인 타입으로 넣기
 @Controller('event')
 export class EventController {
-  private readonly EVENT_SERVER_URL = process.env.EVENT_SERVICE_URL;
+  private readonly EVENT_SERVER_URL = process.env.EVENT_SERVICE_URL ?? 'http://localhost:4002';
   private readonly EVENT_PATH_PREFIX = '/event';
   private readonly REWARD_PATH_PREFIX = '/reward';
   private readonly EXTERNAL_PATH_PREFIX = '/external';
@@ -28,7 +27,7 @@ export class EventController {
   @Post()
   async insertEvent(@Req() req) {
     const url = `${this.EVENT_SERVER_URL}${req.url.replace(this.EVENT_PATH_PREFIX, '')}`;
-    const result = await firstValueFrom(this.httpService.post(url, req));
+    const result = await firstValueFrom(this.httpService.post(url, req.body));
     return result.data;
   }
 
@@ -37,21 +36,21 @@ export class EventController {
   @Put()
   async updateEvent(@Req() req) {
     const url = `${this.EVENT_SERVER_URL}${req.url.replace(this.EVENT_PATH_PREFIX, '')}`;
-    const result = await firstValueFrom(this.httpService.put(url, req));
+    const result = await firstValueFrom(this.httpService.put(url, req.body));
     return result.data;
   }
 
   @Get()
   async getEvent(@Req() req) {
     const url = `${this.EVENT_SERVER_URL}${req.url.replace(this.EVENT_PATH_PREFIX, '')}`;
-    const result = await firstValueFrom(this.httpService.get(url, req));
+    const result = await firstValueFrom(this.httpService.get(url, {params: req.params}));
     return result.data;
   }
 
   @Get('/list')
   async getEventList(@Req() req) {
     const url = `${this.EVENT_SERVER_URL}${req.url.replace(this.EVENT_PATH_PREFIX, '')}`;
-    const result = await firstValueFrom(this.httpService.get(url, req));
+    const result = await firstValueFrom(this.httpService.get(url, {params: req.params}));
     return result.data;
   }
 
@@ -62,7 +61,7 @@ export class EventController {
   @Post('reward')
   async insertReward(@Req() req) {
     const url = `${this.EVENT_SERVER_URL}${req.url.replace(this.REWARD_PATH_PREFIX, '')}`;
-    const result = await firstValueFrom(this.httpService.post(url, req));
+    const result = await firstValueFrom(this.httpService.post(url, req.body));
     return result.data;
   }
 
@@ -71,7 +70,7 @@ export class EventController {
   @Put('reward')
   async updateReward(@Req() req) {
     const url = `${this.EVENT_SERVER_URL}${req.url.replace(this.REWARD_PATH_PREFIX, '')}`;
-    const result = await firstValueFrom(this.httpService.put(url, req));
+    const result = await firstValueFrom(this.httpService.put(url, req.body));
     return result.data;
   }
 
@@ -80,7 +79,7 @@ export class EventController {
   @Get('reward')
   async getReward(@Req() req) {
     const url = `${this.EVENT_SERVER_URL}${req.url.replace(this.REWARD_PATH_PREFIX, '')}`;
-    const result = await firstValueFrom(this.httpService.get(url, req));
+    const result = await firstValueFrom(this.httpService.get(url, {params: req.params}));
     return result.data;
   }
 
@@ -89,7 +88,7 @@ export class EventController {
   @Get('reward/list')
   async getRewardList(@Req() req) {
     const url = `${this.EVENT_SERVER_URL}${req.url.replace(this.REWARD_PATH_PREFIX, '')}`;
-    const result = await firstValueFrom(this.httpService.get(url, req));
+    const result = await firstValueFrom(this.httpService.get(url, {params: req.params}));
     return result.data;
   }
 
@@ -98,7 +97,7 @@ export class EventController {
   @Post('reward/request')
   async insertRewardRequest(@Req() req) {
     const url = `${this.EVENT_SERVER_URL}${req.url.replace(this.REWARD_PATH_PREFIX, '')}`;
-    const result = await firstValueFrom(this.httpService.post(url, req));
+    const result = await firstValueFrom(this.httpService.post(url, req.body));
     return result.data;
   }
 
@@ -106,7 +105,7 @@ export class EventController {
   @Post('reward/request/test')
   async insertRewardRequestTest(@Req() req) {
     const url = `${this.EVENT_SERVER_URL}${req.url.replace(this.REWARD_PATH_PREFIX, '')}`;
-    const result = await firstValueFrom(this.httpService.post(url, req));
+    const result = await firstValueFrom(this.httpService.post(url, req.body));
     return result.data;
   }
 
@@ -115,7 +114,7 @@ export class EventController {
   @Put('reward/request/confirm')
   async updateRewardRequestState(@Req() req) {
     const url = `${this.EVENT_SERVER_URL}${req.url.replace(this.REWARD_PATH_PREFIX, '')}`;
-    const result = await firstValueFrom(this.httpService.put(url, req));
+    const result = await firstValueFrom(this.httpService.put(url, req.body));
     return result.data;
   }
 
@@ -124,7 +123,7 @@ export class EventController {
   @Get('reward/request/list')
   async getRewardRequestAllUserList(@Req() req) {
     const url = `${this.EVENT_SERVER_URL}${req.url.replace(this.REWARD_PATH_PREFIX, '')}`;
-    const result = await firstValueFrom(this.httpService.get(url, req));
+    const result = await firstValueFrom(this.httpService.get(url, {params: req.params}));
     return result.data;
   }
 
@@ -133,7 +132,7 @@ export class EventController {
   @Get('reward/request/list/my')
   async getRewardRequestMyList(@Req() req) {
     const url = `${this.EVENT_SERVER_URL}${req.url.replace(this.REWARD_PATH_PREFIX, '')}`;
-    const result = await firstValueFrom(this.httpService.get(url, req));
+    const result = await firstValueFrom(this.httpService.get(url, {params: req.params}));
     return result.data;
   }
 
@@ -141,14 +140,14 @@ export class EventController {
   @Get('/external/user/success')
   async isUserEventSuccess(@Req() req) {
     const url = `${this.EVENT_SERVER_URL}${req.url.replace(this.EXTERNAL_PATH_PREFIX, '')}`;
-    const result = await firstValueFrom(this.httpService.get(url, req));
+    const result = await firstValueFrom(this.httpService.get(url, {params: req.params}));
     return result.data;
   }
 
   @Get('/external/user/attendance')
   async userAttendance(@Req() req) {
     const url = `${this.EVENT_SERVER_URL}${req.url.replace(this.EXTERNAL_PATH_PREFIX, '')}`;
-    const result = await firstValueFrom(this.httpService.get(url, req));
+    const result = await firstValueFrom(this.httpService.get(url, {params: req.params}));
     return result.data;
   }
 

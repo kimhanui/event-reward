@@ -15,7 +15,7 @@ export class AppService {
     constructor(@InjectModel(User.name) private userDao: Model<UserDocument>) {}
 
     async isTokenValid(payload: Payload) : Promise<boolean> {
-      console.log('isTokenValid::', payload);
+      console.log('isTokenValid::', JSON.stringify(payload));
       if(!payload){
         return false;
       }

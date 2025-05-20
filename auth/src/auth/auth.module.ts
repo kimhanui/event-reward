@@ -11,7 +11,7 @@ import { JwtModule } from '@nestjs/jwt';
     MongooseModule.forRoot(
       process.env.NODE_ENV === 'production'
         ? process.env.MONGO_URI
-        : 'mongodb://localhost:27017/mydb?authSource=admin',
+        : 'mongodb://localhost:27017/mydb',
     ),
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }])
   ],

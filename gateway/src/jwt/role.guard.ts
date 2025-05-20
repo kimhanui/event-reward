@@ -25,7 +25,7 @@ export class RolesGuard implements CanActivate {
 
     // JwtStrategy.invalidate에서 반환되는 값인 user에서 role 반환 필요.
     const { user } = context.switchToHttp().getRequest();
-
+    console.log("RolesGuard:", user, user.role)
     if (!user || !requiredRoles.includes(user.role)) {
       throw new ForbiddenException('Access denied for role');
     }

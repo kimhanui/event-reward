@@ -7,7 +7,7 @@ import { Model } from 'mongoose';
 import { ErrorCode, ResponseDTO, sendFail, sendSuccess } from '../util/common.util';
 import { User, UserDocument } from '../db/user.schema';
 import {
-  LoginDTO,
+  LoginDTO, mapToUserVO,
   Payload,
   Role,
   UserVO
@@ -15,8 +15,8 @@ import {
 
 @Injectable()
 export class AuthService {
-  private readonly ACCESS_SECRET = 'ACCESS_SECRET';
-  private readonly REFRESH_SECRET = 'REFRESH_SECRET';
+  private readonly ACCESS_SECRET = process.env.ACCESS_SECRET ?? 'ACCESS_SECRET';
+  private readonly REFRESH_SECRET = process.env.REFRESH_SECRET ?? 'REFRESH_SECRET'
   private readonly ACCESS_DURATION = 15 * 60; // 15m
   private readonly REFRESH_DURATION = 7 * 60 * 60 * 24; // 7d
 
@@ -25,15 +25,14 @@ export class AuthService {
     @InjectModel(User.name) private userDao: Model<UserDocument>,
   ) {}
 
-  async insertUser(user: UserVO): Promise<ResponseDTO> {
+  async insertUser(x_user_id: string, req: any) : Promise<ResponseDTO> {
+    const user = req as UserVO
     if (!user) {
       return sendFail(ErrorCode.PARAM001);
     }
-
     if (
       !(4 <= user._id?.length && user._id?.length <= 10) || // id : 4~10자
       !(4 <= user.pw?.length && user.pw?.length <= 10) //|| // pw : 4~10자
-      // !Object.values(Role).includes(user.role)
     ) {
       return sendFail(ErrorCode.PARAM002);
     }
@@ -43,14 +42,13 @@ export class AuthService {
       return sendFail(ErrorCode.AUTH002);
     }
 
-    const resultUser = await this.userDao.create({
+    const resultUser = await this.userDao.insertOne({
       _id: user._id,
       pw: await this.bycryptPassword(user.pw),
       role: Role.USER // 고정
     });
 
-    // const uuser = convertToUserVO(resultUser);
-    return sendSuccess(resultUser);
+    return sendSuccess(mapToUserVO(resultUser));
   }
 
   private saltRounds = 10; // 해시 반복 횟수 (10~12 추천)
@@ -65,7 +63,8 @@ export class AuthService {
     return bcrypt.compare(rawPassword, encryptedPassword);
   }
 
-  async updateUserRole(user: UserVO): Promise<ResponseDTO> {
+  async updateUserRole(x_user_id: string, req: any) : Promise<ResponseDTO> {
+    const user = req as UserVO
     if (!user) {
       return sendFail(ErrorCode.PARAM001);
     }
@@ -111,6 +110,7 @@ export class AuthService {
 
     payload.expire_dt = new Date(dateTimeMs + 1000 * this.ACCESS_DURATION);
     const access_token = this.createAccessToken(payload);
+
     payload.expire_dt = new Date(dateTimeMs + 1000 * this.REFRESH_DURATION);
     const refresh_token = this.createRefreshToken(payload);
 
@@ -125,19 +125,19 @@ export class AuthService {
   }
 
   private createAccessToken(payload: Payload) {
-    const access_token = this.jwtService.sign(payload, {
+    payload.type = 'access'
+    return this.jwtService.sign(payload, {
       secret: this.ACCESS_SECRET,
       expiresIn: this.ACCESS_DURATION
     });
-    return access_token;
   }
 
   private createRefreshToken(payload: Payload) {
-    const refresh_token = this.jwtService.sign(payload, {
+    payload.type = 'refresh'
+    return this.jwtService.sign(payload, {
       secret: this.REFRESH_SECRET,
       expiresIn: this.REFRESH_DURATION
     });
-    return refresh_token;
   }
 
   private getPayload(user: User): Payload {
@@ -145,15 +145,15 @@ export class AuthService {
     return {
       userId: user._id,
       role: user.role,
-    };
+    } as Payload;
   }
 
-  async logout(user: Payload): Promise<ResponseDTO> {
-    if(!user.userId){
+  async logout(x_user_id: string, req: any): Promise<ResponseDTO> {
+    if(!x_user_id){
       return sendFail(ErrorCode.PARAM001)
     }
-    console.log('logout:', user);
-    const findUser = await this.userDao.findOne({ _id: user.userId }).exec();
+    console.log('logout:', x_user_id);
+    const findUser = await this.userDao.findOne({ _id: x_user_id }).exec();
     if (findUser === null) {
       return sendFail(ErrorCode.AUTH001);
     }
@@ -174,9 +174,11 @@ export class AuthService {
     const verifiedPayload = this.jwtService.verify(refreshToken, {
       secret: this.REFRESH_SECRET
     });
+
     const payload: Payload = {
       userId: verifiedPayload.userId,
       role: verifiedPayload.role,
+      type: verifiedPayload.type,
       expire_dt: verifiedPayload.expire_dt,
     };
 
@@ -192,7 +194,8 @@ export class AuthService {
     const dateTimeMs = Date.now();
 
     payload.expire_dt = new Date(dateTimeMs + 1000 * this.ACCESS_DURATION);
-    const newAccessToken = this.createRefreshToken(payload);
+    const newAccessToken = this.createAccessToken(payload);
+
     payload.expire_dt = new Date(dateTimeMs + 1000 * this.REFRESH_DURATION);
     const newRefreshToken = this.createRefreshToken(payload);
 

@@ -37,4 +37,5 @@ export interface Payload {
   userId: string; // 바꾸고 싶다 user_id로
   role: Role;
   expire_dt?: Date;
+  type: string; // refresh, access
 }

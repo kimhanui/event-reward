@@ -1,4 +1,3 @@
-// jwt.strategy.ts
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
@@ -12,7 +11,14 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(), // Authorization: Bearer <token>
       ignoreExpiration: false,
-      secretOrKey: 'ACCESS_SECRET'
+      secretOrKeyProvider: (req, rawToken, done) => {
+        const decoded = JSON.parse(Buffer.from(rawToken.split('.')[1], 'base64').toString());
+        const key = decoded.type === 'refresh'
+            ? (process.env.REFRESH_SECRET ?? 'REFRESH_SECRET')
+            : (process.env.ACCESS_SECRET ?? 'ACCESS_SECRET');
+        done(null, key);
+      },
+
     });
   }
 
@@ -21,17 +27,19 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
    * @param payload JWT를 인코딩하기 전 JSON 객체 ( {@link JwtService#sign} payload + iat, exp )
    */
   async validate(payload: Payload) {
-    // console.log('validate::', payload);
     const result = await this.appService.isTokenValid(payload);
 
     if (!result) {
       throw new UnauthorizedException('토큰 정보가 유효하지 않습니다.');
     }
 
+    // console.log('validate::', payload);
+
     return {
       userId: payload.userId,
       role: payload.role,
-      expire_dt: payload.expire_dt
+      expire_dt: payload.expire_dt,
+      type: payload.type
     };
   }
 }

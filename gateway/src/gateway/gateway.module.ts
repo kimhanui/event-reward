@@ -7,6 +7,8 @@ import { User, UserSchema } from 'src/db/user.schema';
 import { JwtStrategy } from '../jwt/jwt.strategy';
 import { AppController } from './gateway.controller';
 import { AppService } from './gateway.service';
+import { AuthController } from './auth.controller';
+import { EventController } from './event.controller';
 
 @Module({
   imports: [
@@ -20,7 +22,7 @@ import { AppService } from './gateway.service';
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     HttpModule
   ],
-  controllers: [AppController],
+  controllers: [AppController, AuthController, EventController],
   providers: [AppService, JwtStrategy],
   exports: [MongooseModule]
 })

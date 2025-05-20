@@ -11,7 +11,7 @@ docker-compose up -d # 컨테이너 실행
 docker-compose down  # 컨테이너 종료
 ```
 
-테스트 데이터 주입 커맨드:
+테스트 데이터 주입 API: `GET /init/mongo` 호출
 
 ```
 # 테스트 데이터 수동 입력 (powershell 기준)

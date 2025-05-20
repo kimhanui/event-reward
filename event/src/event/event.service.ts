@@ -47,9 +47,7 @@ export class EventService {
     private rewardRequestDao: Model<RewardRequestDocument>,
   ) {}
 
-  async insertEvent(req: any) {
-    const { user } = req;
-    const eventVO = req.body as EventVO;
+  async insertEvent(x_user_id: string, eventVO : EventVO) {
     if (!eventVO) {
       return sendFail(ErrorCode.PARAM001);
     }
@@ -71,7 +69,7 @@ export class EventService {
       return sendFail(ErrorCode.EVENT003);
     }
 
-    eventVO.reg_user_id = user.userId;
+    eventVO.reg_user_id = x_user_id;
     const newEventVO = mapToEventDocument(eventVO);
 
     const savedEvent = await this.eventDao.create(newEventVO);
@@ -79,9 +77,8 @@ export class EventService {
     return savedEvent;
   }
 
-  async updateEvent(req: any) {
-    const { user } = req;
-    const eventVO = req.body as EventVO;
+  async updateEvent(x_user_id: string, req: any) {
+    const eventVO = req as EventVO;
     if (!eventVO || !isObjectId(eventVO._id)) {
       return sendFail(ErrorCode.PARAM001);
     }
@@ -109,7 +106,7 @@ export class EventService {
     }
 
     eventVO.upd_dt = new Date();
-    eventVO.upd_user_id = user.userId;
+    eventVO.upd_user_id = x_user_id;
     const newEvent = mapToEventDocument(eventVO);
     // Object.assign(findEvent, updateEvent);
     // await findEvent.save();
@@ -129,8 +126,8 @@ export class EventService {
     return sendSuccess();
   }
 
-  async getEvent(req: any) {
-    const eventVO = req.query as EventVO;
+  async getEvent(x_user_id: string, req: any) {
+    const eventVO = req as EventVO;
     if (!eventVO || !isObjectId(eventVO._id)) {
       return sendFail(ErrorCode.PARAM001);
     }
@@ -140,9 +137,9 @@ export class EventService {
     return sendSuccess(resultEvent);
   }
 
-  async getEventList(req: any) {
-    const page = req.query.page ?? 0;
-    const size = req.query.size ?? 10;
+  async getEventList(x_user_id: string, req: any) {
+    const page = req.page ?? 0;
+    const size = req.size ?? 10;
 
     const findEventList = await this.eventDao
       .find()
@@ -153,9 +150,9 @@ export class EventService {
     return sendSuccessList(page, size, eventVOList);
   }
 
-  async insertReward(req: any) {
+  async insertReward(x_user_id: string, req: any) {
     const { user } = req;
-    const rewardVO = req.body as RewardVO;
+    const rewardVO = req as RewardVO;
 
     if (!rewardVO) {
       return sendFail(ErrorCode.PARAM001);
@@ -174,9 +171,9 @@ export class EventService {
     return sendSuccess(savedReward);
   }
 
-  async updateReward(req: any) {
-    const { user } = req;
-    const rewardVO = req.body as RewardVO;
+  async updateReward(x_user_id: string, req: any) {
+    // const { user } = req;
+    const rewardVO = req as RewardVO;
 
     if (!rewardVO && !isObjectId(rewardVO._id)) {
       return sendFail(ErrorCode.PARAM001);
@@ -213,8 +210,8 @@ export class EventService {
     return sendSuccess();
   }
 
-  async getReward(req: any) {
-    const rewardVO = req.query as RewardVO;
+  async getReward(x_user_id: string, req: any) {
+    const rewardVO = req as RewardVO;
     if (!rewardVO || !isObjectId(rewardVO._id)) {
       return sendFail(ErrorCode.PARAM001);
     }
@@ -225,9 +222,9 @@ export class EventService {
     return sendSuccess(resultVO);
   }
 
-  async getRewardList(req: any) {
-    const page = req.query.page ?? 0;
-    const size = req.query.size ?? 10;
+  async getRewardList(x_user_id: string, req: any) {
+    const page = req.page ?? 0;
+    const size = req.size ?? 10;
 
     const rewardList = await this.rewardDao
       .find()
@@ -243,13 +240,13 @@ export class EventService {
   /**
    * 중복 보상 지급 대응 : 복합 고유 인덱스 키 활용
    */
-  async insertRewardRequest(req: any) {
+  async insertRewardRequest(x_user_id: string, req: any) {
     const { user } = req;
-    const rewardRequestVO = req.body as RewardRequestVO;
+    const rewardRequestVO = req as RewardRequestVO;
     if (!rewardRequestVO) {
       return sendFail(ErrorCode.PARAM001);
     }
-    rewardRequestVO.user_id = user.userId;
+    rewardRequestVO.user_id = x_user_id;
     if (
       !rewardRequestVO.user_id ||
       !rewardRequestVO.event_id ||
@@ -330,9 +327,9 @@ export class EventService {
     return fulfilledResult;
   }
 
-  async updateRewardRequestState(req: any) {
+  async updateRewardRequestState(x_user_id: string, req: any) {
     const { user } = req;
-    const rewardRequestVO = req.body as RewardRequestVO;
+    const rewardRequestVO = req as RewardRequestVO;
     if (!rewardRequestVO) {
       return sendFail(ErrorCode.PARAM001);
     }
@@ -424,79 +421,15 @@ export class EventService {
     return sendSuccess();
   }
 
-  async isUserEventSuccessPublic(req: any) {
+  async isUserEventSuccessPublic(x_user_id: string, req: any) {
     const { user } = req;
-    const query = req.query;
+    const query = req;
 
     const findEvent = await this.eventDao.findById(query.event_id);
 
     // 지급 조건 검증
-    return await this.isUserEventFulfilled(user.user_id, findEvent.conditions);
+    return await this.isUserEventFulfilled(x_user_id, findEvent.conditions);
   }
-
-  // FIXME: major issue - conditions 필드
-  /**
-   *
-   * @param userId
-   * @param eventCondition populated('condition_id)
-   */
-  // private async isUserEventSuccess(
-  //   userId: string,
-  //   eventCondition: EventCondition[]
-  // ) {
-  //   for (let i = 0; i < eventCondition.length; i++) {
-  //     const eventCond = eventCondition[i];
-  //     const con = eventCond.condition_id as unknown as Condition;
-
-  //     const collectionName = con.collection_name;
-  //     const userFieldName = con.user_field_name;
-
-  //     // const whereClause = Object.assign(
-  //     //   {
-  //     //     [userFieldName]: userId
-  //     //   },
-  //     //   this.buildCondition(eventCond)
-  //     // );
-  //     let whereClause = con.where_clause;
-  //     whereClause = util.format(whereClause, userId);
-  //     // console.log('whereCluase:', whereClause);
-  //     const parsed = JSON.parse(whereClause);
-
-  //     // FIXME: mongoose 연결 정보가 없어 실행자체가 안 됨
-  //     // FIXME: 실행되면 where_clause, user_field_name 으로만 사용해보기
-  //     // exists 쿼리
-  //     const condResult = await mongoose.connection
-  //       .collection(collectionName)
-  //       .findOne(parsed, { projection: { _id: 1 } });
-
-  //     if (!condResult) {
-  //       return Object.assign(sendFail(ErrorCode.EVENT005), { value: con });
-  //     }
-  //   }
-  //   return sendSuccess();
-  // }
-
-  // buildCondition(eventCond: EventCondition) {
-  //   const cond = eventCond.condition_id;
-  //   const { field_name, field_type } = cond as unknown as Condition;
-  //   if (eventCond.cal_type === 'EQ' && eventCond.str_val) {
-  //     return {
-  //       [field_name]:
-  //         field_type === 'STRING' ? eventCond.str_val : eventCond.min_num
-  //     };
-  //   }
-  //   if (eventCond.cal_type === 'RG') {
-  //     const val = {};
-  //     if (eventCond.min_num !== undefined) {
-  //       val['$gte'] = eventCond.min_num;
-  //     }
-  //     if (eventCond.max_num !== undefined) {
-  //       val['$lte'] = eventCond.max_num;
-  //     }
-  //     return { [field_name]: val };
-  //   }
-  //   return {};
-  // }
 
   async userAttendance(user_id: string) {
     if (!user_id) {
@@ -519,15 +452,13 @@ export class EventService {
     return sendSuccess();
   }
 
-  async getRewardRequestAllUserList(req: any) {
-    const { user } = req;
-
-    const page = req.query.page ?? 0;
-    const size = req.query.size ?? 10;
-    const search_user_id = req.query.user_id;
-    const search_event_id = req.query.event_id;
-    const search_request_state = req.query.request_state;
-    console.log('req.query', req.query);
+  async getRewardRequestAllUserList(x_user_id: string, req: any) {
+    const page = req.page ?? 0;
+    const size = req.size ?? 10;
+    const search_user_id = req.user_id;
+    const search_event_id = req.event_id;
+    const search_request_state = req.request_state;
+    console.log('req', req);
 
     const where_clause = {};
     if (search_user_id) where_clause['user_id'] = search_user_id;
@@ -550,17 +481,15 @@ export class EventService {
     return sendSuccessList(page, size, userRequestDTO);
   }
 
-  async getRewardRequestMyList(req: any) {
-    const { user } = req;
-
-    let user_id = user.userId;
+  async getRewardRequestMyList(x_user_id: string, req: any) {
+    let user_id = x_user_id;
 
     if (req.user.role == Role.ADMIN) {
-      user_id = req.query.user_id;
+      user_id = req.user_id;
     }
 
-    const page = req.query.page ?? 0;
-    const size = req.query.size ?? 10;
+    const page = req.page ?? 0;
+    const size = req.size ?? 10;
 
     const userRequestList = await this.rewardRequestDao
       .find({ user_id: user_id })

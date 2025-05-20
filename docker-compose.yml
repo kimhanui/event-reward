@@ -26,6 +26,8 @@ services:
     environment:
       PORT: 3001
       MONGO_URI: mongodb://root:test@mongodb:27017/mydb?authSource=admin
+      ACCESS_SECRET: 'ACCESS_SECRET'
+      REFRESH_SECRET: 'REFRESH_SECRET'
 
   event:
     build:
