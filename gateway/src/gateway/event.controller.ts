@@ -10,7 +10,6 @@ import { firstValueFrom } from 'rxjs';
 export class EventController {
   private readonly EVENT_SERVER_URL = process.env.EVENT_SERVICE_URL ?? 'http://localhost:4002';
   private readonly EVENT_PATH_PREFIX = '/event';
-  private readonly REWARD_PATH_PREFIX = '/reward';
   private readonly EXTERNAL_PATH_PREFIX = '/external';
 
   constructor(private readonly httpService: HttpService) {}
@@ -60,7 +59,7 @@ export class EventController {
   @RolesDecorator(Role.OPERATOR, Role.ADMIN)
   @Post('reward')
   async insertReward(@Req() req) {
-    const url = `${this.EVENT_SERVER_URL}${req.url.replace(this.REWARD_PATH_PREFIX, '')}`;
+    const url = `${this.EVENT_SERVER_URL}${req.url.replace(this.EVENT_PATH_PREFIX, '')}`;
     const result = await firstValueFrom(this.httpService.post(url, req.body));
     return result.data;
   }
@@ -69,7 +68,7 @@ export class EventController {
   @RolesDecorator(Role.OPERATOR, Role.ADMIN)
   @Put('reward')
   async updateReward(@Req() req) {
-    const url = `${this.EVENT_SERVER_URL}${req.url.replace(this.REWARD_PATH_PREFIX, '')}`;
+    const url = `${this.EVENT_SERVER_URL}${req.url.replace(this.EVENT_PATH_PREFIX, '')}`;
     const result = await firstValueFrom(this.httpService.put(url, req.body));
     return result.data;
   }
@@ -78,7 +77,7 @@ export class EventController {
   @RolesDecorator(Role.OPERATOR, Role.ADMIN)
   @Get('reward')
   async getReward(@Req() req) {
-    const url = `${this.EVENT_SERVER_URL}${req.url.replace(this.REWARD_PATH_PREFIX, '')}`;
+    const url = `${this.EVENT_SERVER_URL}${req.url.replace(this.EVENT_PATH_PREFIX, '')}`;
     const result = await firstValueFrom(this.httpService.get(url, {params: req.params}));
     return result.data;
   }
@@ -87,7 +86,7 @@ export class EventController {
   @RolesDecorator(Role.OPERATOR, Role.ADMIN)
   @Get('reward/list')
   async getRewardList(@Req() req) {
-    const url = `${this.EVENT_SERVER_URL}${req.url.replace(this.REWARD_PATH_PREFIX, '')}`;
+    const url = `${this.EVENT_SERVER_URL}${req.url.replace(this.EVENT_PATH_PREFIX, '')}`;
     const result = await firstValueFrom(this.httpService.get(url, {params: req.params}));
     return result.data;
   }
@@ -96,7 +95,7 @@ export class EventController {
   @RolesDecorator(Role.USER, Role.ADMIN)
   @Post('reward/request')
   async insertRewardRequest(@Req() req) {
-    const url = `${this.EVENT_SERVER_URL}${req.url.replace(this.REWARD_PATH_PREFIX, '')}`;
+    const url = `${this.EVENT_SERVER_URL}${req.url.replace(this.EVENT_PATH_PREFIX, '')}`;
     const result = await firstValueFrom(this.httpService.post(url, req.body));
     return result.data;
   }
@@ -104,7 +103,7 @@ export class EventController {
   // 통합 테스트 용 API
   @Post('reward/request/test')
   async insertRewardRequestTest(@Req() req) {
-    const url = `${this.EVENT_SERVER_URL}${req.url.replace(this.REWARD_PATH_PREFIX, '')}`;
+    const url = `${this.EVENT_SERVER_URL}${req.url.replace(this.EVENT_PATH_PREFIX, '')}`;
     const result = await firstValueFrom(this.httpService.post(url, req.body));
     return result.data;
   }
@@ -113,7 +112,7 @@ export class EventController {
   @RolesDecorator(Role.OPERATOR, Role.ADMIN)
   @Put('reward/request/confirm')
   async updateRewardRequestState(@Req() req) {
-    const url = `${this.EVENT_SERVER_URL}${req.url.replace(this.REWARD_PATH_PREFIX, '')}`;
+    const url = `${this.EVENT_SERVER_URL}${req.url.replace(this.EVENT_PATH_PREFIX, '')}`;
     const result = await firstValueFrom(this.httpService.put(url, req.body));
     return result.data;
   }
@@ -122,7 +121,7 @@ export class EventController {
   @RolesDecorator(Role.OPERATOR, Role.AUDITOR, Role.ADMIN)
   @Get('reward/request/list')
   async getRewardRequestAllUserList(@Req() req) {
-    const url = `${this.EVENT_SERVER_URL}${req.url.replace(this.REWARD_PATH_PREFIX, '')}`;
+    const url = `${this.EVENT_SERVER_URL}${req.url.replace(this.EVENT_PATH_PREFIX, '')}`;
     const result = await firstValueFrom(this.httpService.get(url, {params: req.params}));
     return result.data;
   }
@@ -131,7 +130,7 @@ export class EventController {
   @RolesDecorator(Role.USER, Role.ADMIN)
   @Get('reward/request/list/my')
   async getRewardRequestMyList(@Req() req) {
-    const url = `${this.EVENT_SERVER_URL}${req.url.replace(this.REWARD_PATH_PREFIX, '')}`;
+    const url = `${this.EVENT_SERVER_URL}${req.url.replace(this.EVENT_PATH_PREFIX, '')}`;
     const result = await firstValueFrom(this.httpService.get(url, {params: req.params}));
     return result.data;
   }
@@ -139,7 +138,7 @@ export class EventController {
   // 조건 만족 여부
   @Get('user/success')
   async isUserEventSuccess(@Req() req) {
-    const url = `${this.EVENT_SERVER_URL}${req.url.replace(this.REWARD_PATH_PREFIX, '')}`;
+    const url = `${this.EVENT_SERVER_URL}${req.url.replace(this.EVENT_PATH_PREFIX, '')}`;
     const result = await firstValueFrom(this.httpService.get(url, {params: req.params}));
     return result.data;
   }
@@ -148,7 +147,7 @@ export class EventController {
   @RolesDecorator(Role.USER)
   @Get('user/attendance')
   async userAttendance(@Req() req) {
-    const url = `${this.EVENT_SERVER_URL}${req.url.replace(this.REWARD_PATH_PREFIX, '')}`;
+    const url = `${this.EVENT_SERVER_URL}${req.url.replace(this.EVENT_PATH_PREFIX, '')}`;
     const result = await firstValueFrom(this.httpService.get(url, {params: req.params}));
     return result.data;
   }
