@@ -3,6 +3,7 @@
 ## 개요
 
 이벤트 생성, 보상 정의, 유저 보상 요청, 관리자 및 감사자 확인 기능 설계 및 구현
+* API 문서: https://documenter.getpostman.com/view/6436497/2sB2qXn4Rv
 
 ## 실행 방법
 
