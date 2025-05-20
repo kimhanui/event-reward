@@ -26,7 +26,8 @@ docker-compose exec -T mongodb mongosh --username root --password test --authent
 
 - macOS 15.4.1
 - node.js 18
-- nest.js 10
+- nest.js 10 , Typscript
+- mongodb
 - docker
 - `./auth`, `./event`, `./gateway` 폴더 안에 각각의 앱 소스코드와 Dockerfile이 있어 `docker-compose up --build` 로 전체를 빌드, 실행한다.
 - docker-compose up -d 대신 build하는 이유: TS->JS로 빌드한 결과물만 담아 경량화 함. 개발 중 코드 강제 반영해주기 위함.
