@@ -14,8 +14,9 @@ export class UserInjectInterceptor implements NestInterceptor {
     if (req.user) {
       const method = req.method.toUpperCase();
       if (method === 'GET') {
-        // GET이면 query에
+        // GET이면 params에
         req.query.x_user_id = req.user.userId;
+        req.params.x_user_id = req.user.userId;
       } else if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
         // POST/PUT 등은 body에
         req.body.x_user_id = req.user.userId;

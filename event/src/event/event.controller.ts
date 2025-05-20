@@ -83,11 +83,11 @@ export class EventController {
   // 조건 만족 여부
   @Get('user/success')
   async isUserEventSuccess(@Query() req) {
-    if (req.query.user_id) {
-      req.user = {
-        userId: req.query.user_id
-      };
-    }
+    // if (req.query.user_id) {
+    //   req.user = {
+    //     userId: req.query.user_id
+    //   };
+    // }
     return await this.eventService.isUserEventSuccessPublic(req.x_user_id, req);
   }
 

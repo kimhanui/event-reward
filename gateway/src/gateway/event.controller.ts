@@ -127,7 +127,7 @@ export class EventController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @RolesDecorator(Role.USER, Role.ADMIN)
+  @RolesDecorator(Role.USER)
   @Get('reward/request/list/my')
   async getRewardRequestMyList(@Req() req) {
     const url = `${this.EVENT_SERVER_URL}${req.url.replace(this.EVENT_PATH_PREFIX, '')}`;
@@ -148,6 +148,7 @@ export class EventController {
   @Get('user/attendance')
   async userAttendance(@Req() req) {
     const url = `${this.EVENT_SERVER_URL}${req.url.replace(this.EVENT_PATH_PREFIX, '')}`;
+    console.log("url", url, req.query, req.params)
     const result = await firstValueFrom(this.httpService.get(url, {params: req.params}));
     return result.data;
   }

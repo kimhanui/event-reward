@@ -488,10 +488,10 @@ export class EventService {
 
   async getRewardRequestMyList(x_user_id: string, req: any) {
     let user_id = x_user_id;
-
-    if (req.user.role == Role.ADMIN) {
-      user_id = req.user_id;
-    }
+    //
+    // if (req.user.role == Role.ADMIN) {
+    //   user_id = req.user_id;
+    // }
 
     const page = req.page ?? 0;
     const size = req.size ?? 10;
