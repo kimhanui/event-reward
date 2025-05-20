@@ -92,7 +92,7 @@ export class EventController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @RolesDecorator(Role.USER, Role.ADMIN)
+  @RolesDecorator(Role.USER)
   @Post('reward/request')
   async insertRewardRequest(@Req() req) {
     const url = `${this.EVENT_SERVER_URL}${req.url.replace(this.EVENT_PATH_PREFIX, '')}`;
